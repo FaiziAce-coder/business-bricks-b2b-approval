@@ -26,7 +26,10 @@
       totalCount: 0
     },
     activeApplicationId: null,
-    pendingAction: null // { type: 'APPROVE'|'REJECT'|'REVOKE', id: string, name: string }
+    pendingAction: null, // { type: 'APPROVE'|'REJECT'|'REVOKE', id: string, name: string }
+    selectedRecentAppIds: new Set(),
+    selectedAppIds: new Set(),
+    pendingBulkDelete: null
   };
 
   // DOM Elements
@@ -43,11 +46,19 @@
     kpiRejected: document.getElementById('kpiRejected'),
     dashboardPendingBanner: document.getElementById('dashboardPendingBanner'),
     recentAppsTbody: document.getElementById('recentAppsTbody'),
+    selectAllRecentApps: document.getElementById('selectAllRecentApps'),
+    recentAppsBulkBar: document.getElementById('recentAppsBulkBar'),
+    recentAppsSelectedCount: document.getElementById('recentAppsSelectedCount'),
+    deleteSelectedRecentAppsBtn: document.getElementById('deleteSelectedRecentAppsBtn'),
 
     // Applications View
     statusFilterPills: document.getElementById('statusFilterPills'),
     appSearchInput: document.getElementById('appSearchInput'),
     applicationsTbody: document.getElementById('applicationsTbody'),
+    selectAllApps: document.getElementById('selectAllApps'),
+    appsBulkBar: document.getElementById('appsBulkBar'),
+    appsSelectedCount: document.getElementById('appsSelectedCount'),
+    deleteSelectedAppsBtn: document.getElementById('deleteSelectedAppsBtn'),
     paginationText: document.getElementById('paginationText'),
     prevPageBtn: document.getElementById('prevPageBtn'),
     nextPageBtn: document.getElementById('nextPageBtn'),
@@ -78,7 +89,12 @@
     discountTypeSelect: document.getElementById('discountTypeSelect'),
     discountValueGroup: document.getElementById('discountValueGroup'),
     discountValueInput: document.getElementById('discountValueInput'),
-    saveDiscountBtn: document.getElementById('saveDiscountBtn')
+    saveDiscountBtn: document.getElementById('saveDiscountBtn'),
+
+    bulkDeleteModal: document.getElementById('bulkDeleteModal'),
+    bulkDeleteCount: document.getElementById('bulkDeleteCount'),
+    bulkDeleteList: document.getElementById('bulkDeleteList'),
+    confirmBulkDeleteBtn: document.getElementById('confirmBulkDeleteBtn')
   };
 
   // -------------------------------------------------------------
@@ -212,22 +228,58 @@
   function renderRecentApplications(apps) {
     if (!el.recentAppsTbody) return;
     if (!apps || apps.length === 0) {
-      el.recentAppsTbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No wholesale applications yet.</td></tr>';
+      el.recentAppsTbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No wholesale applications yet.</td></tr>';
+      updateRecentAppsBulkUI();
       return;
     }
 
-    el.recentAppsTbody.innerHTML = apps.map(app => `
-      <tr>
-        <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
-        <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
-        <td>${escapeHtml(app.company)}</td>
-        <td>${formatDate(app.createdAt)}</td>
-        <td>${renderStatusBadge(app.status)}</td>
-        <td>
-          <button class="btn btn-secondary btn-sm" onclick="openAppModal('${app.id}')">View Details</button>
-        </td>
-      </tr>
-    `).join('');
+    // Clean up selections that no longer exist
+    const validIds = new Set(apps.map(a => a.id));
+    for (const id of state.selectedRecentAppIds) {
+      if (!validIds.has(id)) state.selectedRecentAppIds.delete(id);
+    }
+
+    el.recentAppsTbody.innerHTML = apps.map(app => {
+      const isChecked = state.selectedRecentAppIds.has(app.id);
+      return `
+        <tr>
+          <td style="text-align: center;">
+            <input type="checkbox" class="table-checkbox recent-app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} />
+          </td>
+          <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
+          <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
+          <td>${escapeHtml(app.company)}</td>
+          <td>${formatDate(app.createdAt)}</td>
+          <td>${renderStatusBadge(app.status)}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="openAppModal('${app.id}')">View Details</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    updateRecentAppsBulkUI();
+  }
+
+  function updateRecentAppsBulkUI() {
+    const total = state.recentApplications ? state.recentApplications.length : 0;
+    const selectedCount = state.selectedRecentAppIds.size;
+
+    if (el.selectAllRecentApps) {
+      el.selectAllRecentApps.checked = total > 0 && selectedCount === total;
+      el.selectAllRecentApps.indeterminate = selectedCount > 0 && selectedCount < total;
+    }
+
+    if (el.recentAppsBulkBar) {
+      if (selectedCount > 0) {
+        el.recentAppsBulkBar.style.display = 'flex';
+        if (el.recentAppsSelectedCount) {
+          el.recentAppsSelectedCount.innerText = `${selectedCount} selected`;
+        }
+      } else {
+        el.recentAppsBulkBar.style.display = 'none';
+      }
+    }
   }
 
   // -------------------------------------------------------------
@@ -235,7 +287,7 @@
   // -------------------------------------------------------------
   async function loadApplications() {
     if (!el.applicationsTbody) return;
-    el.applicationsTbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Loading applications…</td></tr>';
+    el.applicationsTbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Loading applications…</td></tr>';
 
     try {
       const q = new URLSearchParams();
@@ -251,30 +303,66 @@
       renderApplicationsTable(state.applications);
       updatePaginationControls();
     } catch (err) {
-      el.applicationsTbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red">Failed to load applications: ${escapeHtml(err.message)}</td></tr>`;
+      el.applicationsTbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red">Failed to load applications: ${escapeHtml(err.message)}</td></tr>`;
     }
   }
 
   function renderApplicationsTable(apps) {
     if (!apps || apps.length === 0) {
-      el.applicationsTbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No applications found matching your criteria.</td></tr>';
+      el.applicationsTbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No applications found matching your criteria.</td></tr>';
+      updateAppsBulkUI();
       return;
     }
 
-    el.applicationsTbody.innerHTML = apps.map(app => `
-      <tr>
-        <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
-        <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
-        <td>${escapeHtml(app.company)}</td>
-        <td><a href="mailto:${escapeHtml(app.email)}" class="btn-text">${escapeHtml(app.email)}</a></td>
-        <td>${escapeHtml(app.businessType)}</td>
-        <td>${formatDate(app.createdAt)}</td>
-        <td>${renderStatusBadge(app.status)}</td>
-        <td>
-          <button class="btn btn-secondary btn-sm" onclick="openAppModal('${app.id}')">Review</button>
-        </td>
-      </tr>
-    `).join('');
+    // Clean up selections that are not in current page
+    const validIds = new Set(apps.map(a => a.id));
+    for (const id of state.selectedAppIds) {
+      if (!validIds.has(id)) state.selectedAppIds.delete(id);
+    }
+
+    el.applicationsTbody.innerHTML = apps.map(app => {
+      const isChecked = state.selectedAppIds.has(app.id);
+      return `
+        <tr>
+          <td style="text-align: center;">
+            <input type="checkbox" class="table-checkbox app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} />
+          </td>
+          <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
+          <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
+          <td>${escapeHtml(app.company)}</td>
+          <td><a href="mailto:${escapeHtml(app.email)}" class="btn-text">${escapeHtml(app.email)}</a></td>
+          <td>${escapeHtml(app.businessType)}</td>
+          <td>${formatDate(app.createdAt)}</td>
+          <td>${renderStatusBadge(app.status)}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="openAppModal('${app.id}')">Review</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    updateAppsBulkUI();
+  }
+
+  function updateAppsBulkUI() {
+    const total = state.applications ? state.applications.length : 0;
+    const selectedCount = state.selectedAppIds.size;
+
+    if (el.selectAllApps) {
+      el.selectAllApps.checked = total > 0 && selectedCount === total;
+      el.selectAllApps.indeterminate = selectedCount > 0 && selectedCount < total;
+    }
+
+    if (el.appsBulkBar) {
+      if (selectedCount > 0) {
+        el.appsBulkBar.style.display = 'flex';
+        if (el.appsSelectedCount) {
+          el.appsSelectedCount.innerText = `${selectedCount} selected`;
+        }
+      } else {
+        el.appsBulkBar.style.display = 'none';
+      }
+    }
   }
 
   function updatePaginationControls() {
@@ -337,7 +425,7 @@
           <td><span class="badge ${c.discountType !== 'NONE' ? 'badge-pending' : ''}">${escapeHtml(discountDisplay)}</span></td>
           <td>
             <div style="display: flex; gap: 6px;">
-              <button class="btn btn-secondary btn-sm" onclick="openDiscountModal('${c.id}', '${c.discountType}', ${c.discountValue || 0})">Future Discount</button>
+              <button class="btn btn-secondary btn-sm" onclick="openDiscountModal('${c.id}', '${c.discountType}', ${c.discountValue || 0})">Discount</button>
               <button class="btn btn-danger btn-sm" onclick="promptRevoke('${c.id}', '${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}')">Revoke</button>
             </div>
           </td>
@@ -637,7 +725,7 @@
   }
 
   // -------------------------------------------------------------
-  // Future Discount Modal
+  // Discount Modal
   // -------------------------------------------------------------
   function openDiscountModal(id, currentType = 'NONE', currentValue = 0) {
     state.activeDiscountAppId = id;
@@ -681,7 +769,7 @@
         body: JSON.stringify({ discountType, discountValue: finalVal })
       });
 
-      showToast('Future discount configuration saved (inactive)', 'success');
+      showToast('Discount configuration saved (inactive)', 'success');
       closeModal('discountModal');
       loadApprovedCustomers();
     } catch (err) {
@@ -692,6 +780,94 @@
   }
 
   window.openDiscountModal = openDiscountModal;
+
+  // -------------------------------------------------------------
+  // Bulk Deletion Modal & Handlers
+  // -------------------------------------------------------------
+  function openBulkDeleteModal(source) {
+    let selectedApps = [];
+    if (source === 'recent') {
+      const ids = state.selectedRecentAppIds;
+      selectedApps = (state.recentApplications || []).filter(a => ids.has(a.id));
+    } else {
+      const ids = state.selectedAppIds;
+      selectedApps = (state.applications || []).filter(a => ids.has(a.id));
+    }
+
+    if (selectedApps.length === 0) {
+      showToast('No applications selected for deletion', 'error');
+      return;
+    }
+
+    state.pendingBulkDelete = { source, apps: selectedApps };
+
+    if (el.bulkDeleteCount) {
+      el.bulkDeleteCount.innerText = selectedApps.length;
+    }
+
+    if (el.bulkDeleteList) {
+      el.bulkDeleteList.innerHTML = `
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          ${selectedApps.map(a => `
+            <li style="padding: 4px 0; border-bottom: 1px solid #e1e3e5; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: #202223;">${escapeHtml(a.referenceNumber || 'BB-APP')}</strong>
+                <span style="color: #6d7175;"> &ndash; ${escapeHtml(a.firstName)} ${escapeHtml(a.lastName)} (${escapeHtml(a.company)})</span>
+              </div>
+              <span class="badge ${a.status === 'APPROVED' ? 'badge-approved' : (a.status === 'PENDING' ? 'badge-pending' : 'badge-rejected')}">${a.status}</span>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+
+    if (el.bulkDeleteModal) {
+      el.bulkDeleteModal.style.display = 'flex';
+    }
+  }
+
+  async function executeBulkDelete() {
+    if (!state.pendingBulkDelete || !state.pendingBulkDelete.apps || state.pendingBulkDelete.apps.length === 0) {
+      closeModal('bulkDeleteModal');
+      return;
+    }
+
+    const { source, apps } = state.pendingBulkDelete;
+    const ids = apps.map(a => a.id);
+
+    if (el.confirmBulkDeleteBtn) el.confirmBulkDeleteBtn.disabled = true;
+
+    try {
+      const res = await api('/api/admin/applications/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids })
+      });
+
+      showToast(`Successfully deleted ${res.count || ids.length} application(s)`, 'success');
+      closeModal('bulkDeleteModal');
+
+      // Clear selections
+      if (source === 'recent') {
+        state.selectedRecentAppIds.clear();
+      } else {
+        state.selectedAppIds.clear();
+      }
+
+      // Reload data
+      await Promise.all([
+        loadDashboard(),
+        loadApplications()
+      ]);
+      if (state.currentView === 'customers') {
+        loadApprovedCustomers();
+      }
+    } catch (err) {
+      showToast('Failed to delete applications: ' + err.message, 'error');
+    } finally {
+      if (el.confirmBulkDeleteBtn) el.confirmBulkDeleteBtn.disabled = false;
+      state.pendingBulkDelete = null;
+    }
+  }
 
   // -------------------------------------------------------------
   // Helpers
@@ -817,6 +993,79 @@
       el.confirmExecuteBtn.addEventListener('click', executeConfirmAction);
     }
 
+    // Bulk delete confirmation
+    if (el.confirmBulkDeleteBtn) {
+      el.confirmBulkDeleteBtn.addEventListener('click', executeBulkDelete);
+    }
+
+    // Dashboard Recent Applications Selection
+    if (el.selectAllRecentApps) {
+      el.selectAllRecentApps.addEventListener('change', e => {
+        const checked = e.target.checked;
+        if (!state.recentApplications) return;
+        if (checked) {
+          state.recentApplications.forEach(a => state.selectedRecentAppIds.add(a.id));
+        } else {
+          state.selectedRecentAppIds.clear();
+        }
+        renderRecentApplications(state.recentApplications);
+      });
+    }
+
+    if (el.recentAppsTbody) {
+      el.recentAppsTbody.addEventListener('change', e => {
+        const checkbox = e.target.closest('.recent-app-select');
+        if (!checkbox) return;
+        const id = checkbox.dataset.id;
+        if (checkbox.checked) {
+          state.selectedRecentAppIds.add(id);
+        } else {
+          state.selectedRecentAppIds.delete(id);
+        }
+        updateRecentAppsBulkUI();
+      });
+    }
+
+    if (el.deleteSelectedRecentAppsBtn) {
+      el.deleteSelectedRecentAppsBtn.addEventListener('click', () => {
+        openBulkDeleteModal('recent');
+      });
+    }
+
+    // Applications View Selection
+    if (el.selectAllApps) {
+      el.selectAllApps.addEventListener('change', e => {
+        const checked = e.target.checked;
+        if (!state.applications) return;
+        if (checked) {
+          state.applications.forEach(a => state.selectedAppIds.add(a.id));
+        } else {
+          state.selectedAppIds.clear();
+        }
+        renderApplicationsTable(state.applications);
+      });
+    }
+
+    if (el.applicationsTbody) {
+      el.applicationsTbody.addEventListener('change', e => {
+        const checkbox = e.target.closest('.app-select');
+        if (!checkbox) return;
+        const id = checkbox.dataset.id;
+        if (checkbox.checked) {
+          state.selectedAppIds.add(id);
+        } else {
+          state.selectedAppIds.delete(id);
+        }
+        updateAppsBulkUI();
+      });
+    }
+
+    if (el.deleteSelectedAppsBtn) {
+      el.deleteSelectedAppsBtn.addEventListener('click', () => {
+        openBulkDeleteModal('apps');
+      });
+    }
+
     // Discount modal events
     if (el.discountTypeSelect) {
       el.discountTypeSelect.addEventListener('change', updateDiscountVisibility);
@@ -831,6 +1080,7 @@
         closeModal('appModal');
         closeModal('confirmModal');
         closeModal('discountModal');
+        closeModal('bulkDeleteModal');
       }
     });
 

@@ -315,12 +315,42 @@ app.put('/api/admin/applications/:id/discount', async (req, res) => {
     });
     res.json({
       success: true,
-      message: 'Future discount setting saved (currently inactive)',
+      message: 'Discount setting saved (currently inactive)',
       discountType: application.discountType,
       discountValue: application.discountValue
     });
   } catch (err) {
     res.status(err.status || 500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Bulk delete applications
+ */
+app.post('/api/admin/applications/bulk-delete', async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, error: 'Array of application IDs is required' });
+    }
+    const result = await applicationService.bulkDeleteApplications(ids, { adminUser: 'Administrator' });
+    res.json({ success: true, count: result.count, deleted: result.deleted });
+  } catch (error) {
+    logger.error('Bulk delete applications failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Delete single application
+ */
+app.delete('/api/admin/applications/:id', async (req, res) => {
+  try {
+    const result = await applicationService.deleteApplication(req.params.id, { adminUser: 'Administrator' });
+    res.json(result);
+  } catch (error) {
+    logger.error('Delete application failed:', error);
+    res.status(error.status || 500).json({ success: false, error: error.message });
   }
 });
 

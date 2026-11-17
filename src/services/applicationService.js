@@ -600,6 +600,120 @@ async function getDashboardStats() {
   };
 }
 
+/**
+ * Permanently delete a single application by id or referenceNumber
+ */
+async function deleteApplication(id, { adminUser = 'Administrator' } = {}) {
+  const app = await prisma.application.findFirst({
+    where: {
+      OR: [
+        { id: id },
+        { referenceNumber: id }
+      ]
+    }
+  });
+
+  if (!app) {
+    const error = new Error(`Application ${id} not found`);
+    error.status = 404;
+    throw error;
+  }
+
+  // Delete application record (StatusHistory cascades automatically per Prisma schema)
+  await prisma.application.delete({
+    where: { id: app.id }
+  });
+
+  try {
+    await prisma.auditLog.create({
+      data: {
+        actor: adminUser,
+        action: 'APPLICATION_DELETED',
+        targetId: app.id,
+        details: JSON.stringify({
+          referenceNumber: app.referenceNumber,
+          email: app.email,
+          company: app.company,
+          status: app.status
+        })
+      }
+    });
+  } catch (auditErr) {
+    logger.warn('Failed to record delete audit log:', auditErr);
+  }
+
+  return {
+    success: true,
+    deletedId: app.id,
+    referenceNumber: app.referenceNumber
+  };
+}
+
+/**
+ * Bulk delete multiple applications by ID or referenceNumber
+ */
+async function bulkDeleteApplications(ids, { adminUser = 'Administrator' } = {}) {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { count: 0, deleted: [] };
+  }
+
+  // Find all matching applications
+  const apps = await prisma.application.findMany({
+    where: {
+      OR: [
+        { id: { in: ids } },
+        { referenceNumber: { in: ids } }
+      ]
+    },
+    select: {
+      id: true,
+      referenceNumber: true,
+      email: true,
+      company: true,
+      status: true
+    }
+  });
+
+  if (apps.length === 0) {
+    return { count: 0, deleted: [] };
+  }
+
+  const appIds = apps.map(a => a.id);
+
+  // Delete applications (StatusHistory cascades automatically)
+  const result = await prisma.application.deleteMany({
+    where: {
+      id: { in: appIds }
+    }
+  });
+
+  try {
+    await prisma.auditLog.create({
+      data: {
+        actor: adminUser,
+        action: 'APPLICATIONS_BULK_DELETED',
+        targetId: appIds.slice(0, 10).join(','),
+        details: JSON.stringify({
+          count: apps.length,
+          applications: apps.map(a => ({
+            id: a.id,
+            referenceNumber: a.referenceNumber,
+            email: a.email,
+            company: a.company
+          }))
+        })
+      }
+    });
+  } catch (auditErr) {
+    logger.warn('Failed to record bulk delete audit log:', auditErr);
+  }
+
+  return {
+    count: result.count,
+    deleted: apps
+  };
+}
+
 module.exports = {
   submitApplication,
   verifyApplicantEmail,
@@ -610,5 +724,7 @@ module.exports = {
   revokeAccess,
   keepPendingApplication,
   updateDiscountConfig,
-  getDashboardStats
+  getDashboardStats,
+  deleteApplication,
+  bulkDeleteApplications
 };

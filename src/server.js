@@ -50,8 +50,12 @@ app.get('/auth/callback', async (req, res) => {
   }
 
   try {
-    const clientId = process.env.SHOPIFY_CLIENT_ID;
+    const clientId = process.env.SHOPIFY_CLIENT_ID || 'b511593a1fd3ef26d3c5412bdd504458';
     const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+
+    if (!clientSecret) {
+      console.warn('Warning: SHOPIFY_CLIENT_SECRET not configured for OAuth callback');
+    }
 
     const tokenRes = await fetch(`https://${shop}/admin/oauth/access_token`, {
       method: 'POST',
@@ -72,6 +76,9 @@ app.get('/auth/callback', async (req, res) => {
         update: { value: tokenData.access_token },
         create: { key: 'shopify_access_token', value: tokenData.access_token }
       });
+      console.log('Successfully saved shopify_access_token via OAuth callback');
+    } else {
+      console.warn('OAuth callback token exchange response:', tokenData);
     }
   } catch (err) {
     console.error('OAuth exchange error:', err);

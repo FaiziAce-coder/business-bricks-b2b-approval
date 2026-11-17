@@ -276,7 +276,8 @@ async function getApplicationById(id) {
 
 /**
  * Approve application
- * Enforces email ownership verification and connects customer ID
+ * Safely resolves or creates customer in Shopify, links authenticated Shopify customer ID,
+ * synchronizes B2B approval tags, and accurately records email/identity verification.
  */
 async function approveApplication(id, { adminUser = 'Administrator', notes, shopifyCustomerId }) {
   const application = await getApplicationById(id);
@@ -285,51 +286,70 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
     return application;
   }
 
-  // Security Check: Customer email ownership verification
-  if (!application.emailVerified && !shopifyCustomerId) {
-    // If neither email token was verified nor verified customer ID provided, check Shopify
-    const shopifyCustomer = await shopifyService.findCustomerByEmail(application.email);
-    if (!shopifyCustomer) {
-      const error = new Error('Cannot approve: Email ownership has not been verified and no matching Shopify customer exists.');
-      error.status = 422;
-      throw error;
-    }
-  }
-
+  // 1. Resolve Shopify customer record
   let effectiveCustomerId = shopifyCustomerId || application.shopifyCustomerId;
+  let shopifyCustomer = null;
 
-  if (!effectiveCustomerId) {
+  if (effectiveCustomerId) {
     try {
-      const existing = await shopifyService.findCustomerByEmail(application.email);
-      if (existing) {
-        effectiveCustomerId = existing.id;
-      } else {
-        const created = await shopifyService.createCustomer({
-          firstName: application.firstName,
-          lastName: application.lastName,
-          email: application.email,
-          company: application.company,
-          phone: application.phone,
-          tags: ['b2b-approved']
-        });
-        if (created) effectiveCustomerId = created.id;
-      }
-    } catch (err) {
-      console.warn('Warning checking/creating customer in Shopify:', err.message);
+      shopifyCustomer = await shopifyService.findCustomerById(effectiveCustomerId);
+    } catch (e) {
+      console.warn('Could not find customer by ID:', e.message);
     }
   }
 
-  // 1. Update application in database
+  if (!shopifyCustomer) {
+    try {
+      shopifyCustomer = await shopifyService.findCustomerByEmail(application.email);
+    } catch (e) {
+      console.warn('Could not find customer by email:', e.message);
+    }
+  }
+
+  // 2. If customer does not exist in Shopify yet, safely create the customer record
+  if (!shopifyCustomer) {
+    try {
+      shopifyCustomer = await shopifyService.createCustomer({
+        firstName: application.firstName,
+        lastName: application.lastName,
+        email: application.email,
+        company: application.company,
+        phone: application.phone,
+        tags: ['b2b-approved']
+      });
+    } catch (err) {
+      console.warn('Could not auto-create customer in Shopify:', err.message);
+    }
+  }
+
+  if (shopifyCustomer) {
+    effectiveCustomerId = shopifyCustomer.id;
+  }
+
+  // 3. Identity Verification Check:
+  // Under Shopify New Customer Accounts, verified identity is established when
+  // the customer has authenticated through native 6-digit email verification (state === 'ENABLED' / "Has signed in")
+  // or application email was pre-verified via authenticated submission/token.
+  // Newly created customer profiles (state === 'DISABLED') are NOT marked verified until the applicant authenticates.
+  const isShopifyIdentityVerified = Boolean(
+    shopifyCustomer && shopifyCustomer.state === 'ENABLED'
+  );
+
+  const shouldMarkEmailVerified = application.emailVerified || isShopifyIdentityVerified;
+
+  // 4. Update application in database
   const updated = await prisma.application.update({
     where: { id },
     data: {
       status: 'APPROVED',
       shopifyCustomerId: effectiveCustomerId || null,
+      emailVerified: shouldMarkEmailVerified,
+      emailVerifiedAt: shouldMarkEmailVerified && !application.emailVerifiedAt ? new Date() : application.emailVerifiedAt,
       adminNotes: notes !== undefined ? notes : application.adminNotes
     }
   });
 
-  // 2. Write status history
+  // 5. Write status history
   await prisma.statusHistory.create({
     data: {
       applicationId: id,
@@ -340,7 +360,7 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
     }
   });
 
-  // 3. Grant B2B approval tags in Shopify if customer ID is connected
+  // 6. Grant B2B approval tags in Shopify if customer ID is connected
   if (effectiveCustomerId) {
     try {
       await shopifyService.grantB2BApproval(effectiveCustomerId);
@@ -349,13 +369,18 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
     }
   }
 
-  // 4. Audit log
+  // 7. Audit log
   await prisma.auditLog.create({
     data: {
       actor: adminUser,
       action: 'APPLICATION_APPROVED',
       targetId: id,
-      details: JSON.stringify({ email: application.email, shopifyCustomerId: effectiveCustomerId })
+      details: JSON.stringify({
+        email: application.email,
+        shopifyCustomerId: effectiveCustomerId,
+        identityVerified: shouldMarkEmailVerified,
+        shopifyAccountState: shopifyCustomer?.state || 'UNKNOWN'
+      })
     }
   });
 

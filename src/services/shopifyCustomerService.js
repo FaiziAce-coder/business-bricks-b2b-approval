@@ -17,11 +17,37 @@ const getStoreHostname = () => {
 const API_VERSION = '2026-10';
 
 /**
+ * Retrieve active Shopify Admin API access token.
+ * Reads from process.env, falls back to AppSetting in database, or token exchange.
+ */
+async function getAdminAccessToken() {
+  if (process.env.SHOPIFY_ADMIN_ACCESS_TOKEN) {
+    return process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+  }
+
+  try {
+    const prisma = require('../db');
+    const setting = await prisma.appSetting.findUnique({
+      where: { key: 'shopify_access_token' }
+    });
+    if (setting?.value) {
+      process.env.SHOPIFY_ADMIN_ACCESS_TOKEN = setting.value;
+      return setting.value;
+    }
+  } catch (err) {
+    console.warn('Warning: Could not fetch shopify_access_token from DB:', err.message);
+  }
+
+  return null;
+}
+
+/**
  * Execute a GraphQL query or mutation against Shopify Admin API.
  */
-async function executeGraphQL(query, variables = {}, accessToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN) {
-  if (!accessToken) {
-    return { mock: true, message: 'Running in local dev mode without active token' };
+async function executeGraphQL(query, variables = {}, accessToken) {
+  const token = accessToken || await getAdminAccessToken();
+  if (!token) {
+    return { mock: true, message: 'Running without active Shopify token' };
   }
 
   return new Promise((resolve, reject) => {
@@ -32,7 +58,7 @@ async function executeGraphQL(query, variables = {}, accessToken = process.env.S
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': accessToken,
+        'X-Shopify-Access-Token': token,
         'Content-Length': Buffer.byteLength(postData)
       }
     }, res => {
@@ -60,11 +86,15 @@ async function executeGraphQL(query, variables = {}, accessToken = process.env.S
 
 /**
  * Find customer by email in Shopify.
+ * Returns exact customer node with id, email, tags, verifiedEmail, and account state.
  */
 async function findCustomerByEmail(email, accessToken) {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+
   const query = `
     query findCustomer($query: String!) {
-      customers(first: 1, query: $query) {
+      customers(first: 5, query: $query) {
         edges {
           node {
             id
@@ -73,25 +103,30 @@ async function findCustomerByEmail(email, accessToken) {
             email
             tags
             verifiedEmail
+            state
           }
         }
       }
     }
   `;
 
-  const data = await executeGraphQL(query, { query: `email:${email}` }, accessToken);
+  const data = await executeGraphQL(query, { query: `email:${cleanEmail}` }, accessToken);
   if (data?.mock) return null;
 
-  const edge = data?.customers?.edges?.[0];
-  if (!edge) return null;
+  const edges = data?.customers?.edges || [];
+  if (edges.length === 0) return null;
 
-  return edge.node;
+  // Prioritize exact email match
+  const match = edges.find(e => e.node?.email?.toLowerCase() === cleanEmail);
+  return match ? match.node : edges[0].node;
 }
 
 /**
  * Find customer by Shopify ID.
  */
 async function findCustomerById(customerId, accessToken) {
+  if (!customerId) return null;
+
   const query = `
     query getCustomer($id: ID!) {
       customer(id: $id) {
@@ -101,11 +136,12 @@ async function findCustomerById(customerId, accessToken) {
         email
         tags
         verifiedEmail
+        state
       }
     }
   `;
 
-  const formattedId = customerId.startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
+  const formattedId = customerId.toString().startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
   const data = await executeGraphQL(query, { id: formattedId }, accessToken);
   if (data?.mock) return null;
   return data?.customer || null;
@@ -113,8 +149,18 @@ async function findCustomerById(customerId, accessToken) {
 
 /**
  * Create a new customer profile in Shopify if one does not exist.
+ * Avoids duplicate customer records by querying by email first.
  */
-async function createCustomer({ firstName, lastName, email, company, phone, tags = ['b2b-pending'] }, accessToken) {
+async function createCustomer({ firstName, lastName, email, company, phone, tags = ['b2b-approved'] }, accessToken) {
+  if (!email) throw new Error('Email is required to create a customer');
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Guard against duplicate creation
+  const existing = await findCustomerByEmail(cleanEmail, accessToken);
+  if (existing) {
+    return existing;
+  }
+
   const mutation = `
     mutation customerCreate($input: CustomerInput!) {
       customerCreate(input: $input) {
@@ -124,6 +170,8 @@ async function createCustomer({ firstName, lastName, email, company, phone, tags
           lastName
           email
           tags
+          verifiedEmail
+          state
         }
         userErrors {
           field
@@ -133,20 +181,50 @@ async function createCustomer({ firstName, lastName, email, company, phone, tags
     }
   `;
 
+  // Format phone to E.164 if possible
+  let formattedPhone = undefined;
+  if (phone) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) {
+      formattedPhone = `+1${digits}`;
+    } else if (digits.length === 11 && digits.startsWith('1')) {
+      formattedPhone = `+${digits}`;
+    } else if (phone.startsWith('+')) {
+      formattedPhone = phone.replace(/[^\d+]/g, '');
+    }
+  }
+
+  const notes = [];
+  if (company) notes.push(`Wholesale Company: ${company}`);
+  if (phone && !formattedPhone) notes.push(`Contact Phone: ${phone}`);
+
   const input = {
-    firstName,
-    lastName,
-    email,
-    phone: phone ? phone.replace(/[^\d+]/g, '') : undefined,
-    note: company ? `Wholesale Company: ${company}` : undefined,
+    firstName: firstName || undefined,
+    lastName: lastName || undefined,
+    email: cleanEmail,
+    phone: formattedPhone,
+    note: notes.length > 0 ? notes.join(' | ') : undefined,
     tags
   };
 
   const data = await executeGraphQL(mutation, { input }, accessToken);
-  if (data?.mock) return { id: 'gid://shopify/Customer/mock-id', ...input };
+  if (data?.mock) return { id: 'gid://shopify/Customer/mock-id', ...input, verifiedEmail: false, state: 'DISABLED' };
 
   if (data?.customerCreate?.userErrors && data.customerCreate.userErrors.length > 0) {
-    throw new Error(data.customerCreate.userErrors.map(e => e.message).join(', '));
+    const errors = data.customerCreate.userErrors;
+    // If phone specifically failed, retry without phone field and place in notes
+    if (errors.some(e => e.field && e.field.includes('phone'))) {
+      const retryInput = {
+        ...input,
+        phone: undefined,
+        note: (input.note ? input.note + ' | ' : '') + `Phone: ${phone}`
+      };
+      const retryData = await executeGraphQL(mutation, { input: retryInput }, accessToken);
+      if (retryData?.customerCreate?.customer) {
+        return retryData.customerCreate.customer;
+      }
+    }
+    throw new Error(errors.map(e => e.message).join(', '));
   }
 
   return data?.customerCreate?.customer || null;
@@ -158,12 +236,13 @@ async function createCustomer({ firstName, lastName, email, company, phone, tags
  * while preserving any non-B2B custom tags.
  */
 async function syncCustomerStatusTag(customerId, newStatus, accessToken) {
-  const formattedId = customerId.startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
+  if (!customerId) return null;
+  const formattedId = customerId.toString().startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
   const customer = await findCustomerById(formattedId, accessToken);
   if (!customer) return null;
 
-  // Filter out any existing B2B status tags to avoid contradictory states
-  const preservedTags = customer.tags.filter(t => !['b2b-approved', 'b2b-pending', 'b2b-rejected'].includes(t.toLowerCase()));
+  // Filter out existing B2B status tags to prevent conflicting states
+  const preservedTags = (customer.tags || []).filter(t => !['b2b-approved', 'b2b-pending', 'b2b-rejected'].includes(t.toLowerCase()));
 
   if (newStatus === 'APPROVED') {
     preservedTags.push('b2b-approved');
@@ -208,6 +287,7 @@ async function markB2BPending(customerId, accessToken) {
 }
 
 module.exports = {
+  getAdminAccessToken,
   executeGraphQL,
   findCustomerByEmail,
   findCustomerById,

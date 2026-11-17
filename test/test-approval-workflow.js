@@ -5,7 +5,6 @@
 const assert = require('assert');
 const prisma = require('../src/db');
 const applicationService = require('../src/services/applicationService');
-const emailService = require('../src/services/emailService');
 
 async function runApprovalLifecycleTests() {
   console.log('===============================================================');

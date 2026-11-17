@@ -1,7 +1,6 @@
 const prisma = require('../db');
 const { generateEmailVerificationToken, verifyEmailToken } = require('./verificationService');
 const shopifyService = require('./shopifyCustomerService');
-const emailService = require('./emailService');
 
 /**
  * Submit a new wholesale application
@@ -149,13 +148,7 @@ async function submitApplication(data) {
     }
   });
 
-  // Trigger confirmation email and admin alert
-  try {
-    await emailService.sendConfirmationEmail(application);
-    await emailService.sendAdminNewApplicationAlert(application);
-  } catch (emailErr) {
-    console.warn('Email dispatch warning on submit:', emailErr.message);
-  }
+
 
   return {
     application,
@@ -345,12 +338,7 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
     }
   });
 
-  // Dispatch approval welcome email
-  try {
-    await emailService.sendApprovalEmail(updated);
-  } catch (emailErr) {
-    console.warn('Approval email dispatch warning:', emailErr.message);
-  }
+
 
   return updated;
 }
@@ -397,12 +385,7 @@ async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
     }
   });
 
-  // Dispatch rejection notice email
-  try {
-    await emailService.sendRejectionEmail(updated, reason);
-  } catch (emailErr) {
-    console.warn('Rejection email dispatch warning:', emailErr.message);
-  }
+
 
   return updated;
 }
@@ -439,12 +422,7 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
     }
   }
 
-  // Send Revocation Notice Email
-  try {
-    await emailService.sendRevocationEmail(application, reason);
-  } catch (emailErr) {
-    console.warn('Warning: Could not send revocation email:', emailErr.message);
-  }
+
 
   await prisma.auditLog.create({
     data: {

@@ -244,73 +244,67 @@
         <!-- ============================================== -->
         <section id="view-settings" class="portal-view">
           <form id="settingsForm" class="settings-form">
-            <!-- Confirmation Email -->
+            <!-- B2B Customer Tagging -->
             <div class="card">
               <div class="card-header">
-                <h2>1. Application Confirmation Email</h2>
+                <h2>1. Shopify Tag Synchronization</h2>
               </div>
               <div class="card-body">
-                <p class="text-muted text-sm mb-3">Sent to applicant immediately upon application submission.</p>
+                <p class="text-muted text-sm mb-3">Tag added to the customer in Shopify Admin when an application is approved.</p>
                 <div class="form-group mb-3">
-                  <label for="email_confirmation_subject">Email Subject</label>
-                  <input type="text" id="email_confirmation_subject" class="form-control" />
+                  <label for="b2b_tag_name">B2B Customer Tag Name</label>
+                  <input type="text" id="b2b_tag_name" class="form-control" value="b2b-approved" />
                 </div>
                 <div class="form-group">
-                  <label for="email_confirmation_body">Email Body Template</label>
-                  <textarea id="email_confirmation_body" rows="5" class="form-control font-mono"></textarea>
-                  <span class="text-xs text-muted mt-1">Available variables: <code>{{firstName}}</code>, <code>{{lastName}}</code>, <code>{{company}}</code>, <code>{{referenceNumber}}</code></span>
+                  <label>
+                    <input type="checkbox" id="auto_tag_customer" value="true" checked />
+                    Automatically synchronize tag to Shopify customer upon admin approval
+                  </label>
                 </div>
               </div>
             </div>
 
-            <!-- Approval Welcome Email -->
+            <!-- Verification & Security Policy -->
             <div class="card">
               <div class="card-header">
-                <h2>2. Approval Welcome Email</h2>
+                <h2>2. Verification &amp; Security Policy</h2>
               </div>
               <div class="card-body">
-                <p class="text-muted text-sm mb-3">Sent to customer when an administrator clicks "Approve". Explains how to sign in via New Customer Accounts.</p>
+                <p class="text-muted text-sm mb-3">Enforce customer identity and email ownership before granting purchasing access.</p>
                 <div class="form-group mb-3">
-                  <label for="email_approval_subject">Email Subject</label>
-                  <input type="text" id="email_approval_subject" class="form-control" />
-                </div>
-                <div class="form-group">
-                  <label for="email_approval_body">Email Body Template</label>
-                  <textarea id="email_approval_body" rows="6" class="form-control font-mono"></textarea>
-                  <span class="text-xs text-muted mt-1">Available variables: <code>{{firstName}}</code>, <code>{{email}}</code>, <code>{{referenceNumber}}</code></span>
+                  <label>
+                    <input type="checkbox" id="require_verified_email" value="true" checked />
+                    Require email ownership verification or matching authenticated Shopify customer before approving
+                  </label>
+                  <p class="text-xs text-muted mt-1">Prevents unauthorized approval based solely on unverified application form entries.</p>
                 </div>
               </div>
             </div>
 
-            <!-- Rejection Notice Email -->
+            <!-- Fulfillment Hold Backstop -->
             <div class="card">
               <div class="card-header">
-                <h2>3. Rejection Notice Email</h2>
+                <h2>3. Shopify Flow &amp; Webhook Backstop</h2>
               </div>
               <div class="card-body">
-                <p class="text-muted text-sm mb-3">Sent to customer when an application is declined.</p>
+                <p class="text-muted text-sm mb-3">Server-side defense to intercept unauthorized checkouts of semi-custom products.</p>
                 <div class="form-group mb-3">
-                  <label for="email_rejection_subject">Email Subject</label>
-                  <input type="text" id="email_rejection_subject" class="form-control" />
-                </div>
-                <div class="form-group">
-                  <label for="email_rejection_body">Email Body Template</label>
-                  <textarea id="email_rejection_body" rows="5" class="form-control font-mono"></textarea>
-                  <span class="text-xs text-muted mt-1">Available variables: <code>{{firstName}}</code>, <code>{{reason}}</code>, <code>{{referenceNumber}}</code></span>
+                  <label>
+                    <input type="checkbox" id="order_hold_enabled" value="true" checked />
+                    Place fulfillment holds on orders containing semi-custom products placed by non-approved accounts
+                  </label>
                 </div>
               </div>
             </div>
 
-            <!-- Internal Admin Alerts -->
+            <!-- Future Discount Policy (Informational) -->
             <div class="card">
               <div class="card-header">
-                <h2>4. Merchant Admin Notifications</h2>
+                <h2>4. Pricing &amp; Discount Architecture</h2>
               </div>
               <div class="card-body">
-                <div class="form-group">
-                  <label for="admin_notification_recipients">Admin Alert Recipients (comma-separated)</label>
-                  <input type="text" id="admin_notification_recipients" class="form-control" placeholder="logan@businessbricks.com" />
-                </div>
+                <p class="text-muted text-sm mb-2">Per project requirements, discount architecture is prepared in the database schema but strictly <strong>disabled</strong> in this release.</p>
+                <span class="badge badge-pending">Discounts Inactive (NONE / 0.0%)</span>
               </div>
             </div>
 

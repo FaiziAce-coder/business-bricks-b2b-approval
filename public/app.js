@@ -357,7 +357,11 @@
         for (const [key, value] of Object.entries(res.settings)) {
           const input = document.getElementById(key);
           if (input) {
-            input.value = value;
+            if (input.type === 'checkbox') {
+              input.checked = value === 'true' || value === true;
+            } else {
+              input.value = value;
+            }
           }
         }
       }
@@ -372,13 +376,10 @@
 
     try {
       const payload = {
-        email_confirmation_subject: document.getElementById('email_confirmation_subject').value.trim(),
-        email_confirmation_body: document.getElementById('email_confirmation_body').value.trim(),
-        email_approval_subject: document.getElementById('email_approval_subject').value.trim(),
-        email_approval_body: document.getElementById('email_approval_body').value.trim(),
-        email_rejection_subject: document.getElementById('email_rejection_subject').value.trim(),
-        email_rejection_body: document.getElementById('email_rejection_body').value.trim(),
-        admin_notification_recipients: document.getElementById('admin_notification_recipients').value.trim()
+        b2b_tag_name: document.getElementById('b2b_tag_name')?.value?.trim() || 'b2b-approved',
+        auto_tag_customer: document.getElementById('auto_tag_customer')?.checked ? 'true' : 'false',
+        require_verified_email: document.getElementById('require_verified_email')?.checked ? 'true' : 'false',
+        order_hold_enabled: document.getElementById('order_hold_enabled')?.checked ? 'true' : 'false'
       };
 
       await api('/api/admin/settings', {

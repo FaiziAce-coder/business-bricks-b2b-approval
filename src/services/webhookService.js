@@ -7,7 +7,6 @@
 const crypto = require('crypto');
 const prisma = require('../db');
 const shopifyService = require('./shopifyCustomerService');
-const emailService = require('./emailService');
 
 /**
  * Verify Shopify Webhook HMAC signature
@@ -148,24 +147,7 @@ async function processOrderCreated(order) {
     console.warn(`Could not hold fulfillment order via GraphQL: ${holdErr.message}`);
   }
 
-  // C. Dispatch Alert Email to Logan
-  try {
-    const settings = await require('./settingsService').getAllSettings();
-    const recipient = settings.admin_notification_recipients || 'logan@businessbricks.com';
-    await emailService.sendAdminNewApplicationAlert({
-      referenceNumber: `ORDER-${order.order_number}`,
-      firstName: customer ? customer.first_name : 'Guest',
-      lastName: customer ? customer.last_name : 'Customer',
-      company: customer ? (customer.default_address?.company || 'Unspecified') : 'Direct Checkout',
-      email: customerEmail,
-      phone: customer ? customer.phone : 'N/A',
-      businessType: 'UNAUTHORIZED DIRECT ORDER',
-      city: order.shipping_address ? order.shipping_address.city : 'N/A',
-      country: order.shipping_address ? order.shipping_address.country : 'N/A'
-    });
-  } catch (emailErr) {
-    console.warn(`Could not send alert email: ${emailErr.message}`);
-  }
+
 
   // D. Record in Audit Log
   await prisma.auditLog.create({

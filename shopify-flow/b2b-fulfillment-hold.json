@@ -1,0 +1,54 @@
+{
+  "name": "B2B Customer Approval Backstop - Hold Unauthorized Semi-Custom Orders",
+  "description": "Automatically holds fulfillment and alerts Logan if an order containing semi-custom products is placed by a customer without the 'b2b-approved' tag.",
+  "trigger": {
+    "type": "shopify/orders/create",
+    "name": "Order created"
+  },
+  "conditions": [
+    {
+      "logic": "AND",
+      "criteria": [
+        {
+          "field": "order.lineItems.product.tags",
+          "operator": "contains",
+          "value": "semi-custom"
+        },
+        {
+          "field": "order.customer.tags",
+          "operator": "does_not_contain",
+          "value": "b2b-approved"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "shopify/fulfillment_orders/hold",
+      "name": "Hold fulfillment order",
+      "params": {
+        "reason": "OTHER",
+        "reason_notes": "Unauthorized wholesale purchase: customer does not possess the b2b-approved tag."
+      }
+    },
+    {
+      "type": "shopify/orders/add_tags",
+      "name": "Add order tags",
+      "params": {
+        "tags": [
+          "flagged-unauthorized-b2b",
+          "review-required"
+        ]
+      }
+    },
+    {
+      "type": "shopify/emails/send",
+      "name": "Send internal email",
+      "params": {
+        "to": "logan@businessbricks.com",
+        "subject": "[ACTION REQUIRED] Unauthorized B2B Order {{order.name}} Held for Review",
+        "body": "Hi Logan,\n\nOrder {{order.name}} was placed containing semi-custom items by a customer who has NOT been approved for wholesale purchasing:\n\nCustomer: {{order.customer.displayName}} ({{order.customer.email}})\nOrder Total: {{order.totalPriceSet.shopMoney.amount}} {{order.totalPriceSet.shopMoney.currencyCode}}\n\nFulfillment has been automatically placed on HOLD.\n\nPlease check the B2B Approval Portal to verify whether this customer has an active wholesale application:\nhttp://localhost:3000/#applications\n\n- Business Bricks Automation"
+      }
+    }
+  ]
+}

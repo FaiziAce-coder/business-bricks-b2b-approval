@@ -1,0 +1,96 @@
+// Prisma Schema for Business Bricks Customer Approval App
+// Supports PostgreSQL in production and SQLite for local development/testing
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum DiscountType {
+  NONE
+  PERCENTAGE
+  FIXED
+}
+
+model Application {
+  id                     String            @id @default(uuid())
+  referenceNumber        String            @unique
+  firstName              String
+  lastName               String
+  email                  String            @unique
+  company                String
+  phone                  String
+  businessType           String
+  address1               String
+  address2               String?
+  city                   String
+  province               String?
+  zip                    String
+  country                String
+  website                String?
+  taxId                  String?
+  status                 ApplicationStatus @default(PENDING)
+  shopifyCustomerId      String?
+  emailVerified          Boolean           @default(false)
+  emailVerificationToken String?
+  emailVerifiedAt        DateTime?
+  adminNotes             String?
+  
+  // Future discount architecture (prepared, inactive by default in this release)
+  discountType           DiscountType      @default(NONE)
+  discountValue          Float             @default(0.0)
+  
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  
+  history                StatusHistory[]
+
+  @@index([status])
+  @@index([email])
+  @@index([referenceNumber])
+  @@index([shopifyCustomerId])
+}
+
+model StatusHistory {
+  id             String            @id @default(uuid())
+  applicationId  String
+  previousStatus ApplicationStatus
+  newStatus      ApplicationStatus
+  changedBy      String
+  reason         String?
+  timestamp      DateTime          @default(now())
+  
+  application    Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actor      String
+  action     String
+  targetId   String
+  details    String?
+  timestamp  DateTime @default(now())
+
+  @@index([action])
+  @@index([targetId])
+}
+
+model AppSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -6,7 +6,14 @@
 
 const https = require('https');
 
-const SHOPIFY_STORE = process.env.SHOPIFY_STORE_DOMAIN || 'business-bricks.myshopify.com';
+const getStoreHostname = () => {
+  const domain = process.env.SHOPIFY_STORE_DOMAIN || 'business-bricks.myshopify.com';
+  if (domain.includes('promo.businessbricks.com') || !domain.includes('.myshopify.com')) {
+    return 'business-bricks.myshopify.com';
+  }
+  return domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+};
+
 const API_VERSION = '2026-10';
 
 /**
@@ -21,7 +28,7 @@ async function executeGraphQL(query, variables = {}, accessToken = process.env.S
   return new Promise((resolve, reject) => {
     const postData = JSON.stringify({ query, variables });
     const req = https.request({
-      hostname: SHOPIFY_STORE,
+      hostname: getStoreHostname(),
       path: `/admin/api/${API_VERSION}/graphql.json`,
       method: 'POST',
       headers: {

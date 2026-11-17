@@ -8,9 +8,12 @@ const DEFAULT_SETTINGS = {
   email_approval_body: 'Hi {{firstName}},\n\nCongratulations! Your application for wholesale purchasing access with Business Bricks (Ref: {{referenceNumber}}) has been approved.\n\nYou can now browse and purchase our semi-custom collections directly at:\nhttps://promo.businessbricks.com/pages/semi-custom-sets\n\nTo access approved purchasing, simply sign in using your application email ({{email}}). Shopify will deliver a 6-digit one-time access code to your inbox.\n\nBest regards,\nLogan Christensen\nBusiness Bricks',
   
   email_rejection_subject: 'Update regarding your Business Bricks wholesale application',
-  email_rejection_body: 'Hi {{firstName}},\n\nThank you for your interest in Business Bricks. After reviewing your application (Ref: {{referenceNumber}}), we are unable to approve wholesale purchasing access at this time.\n\n{{#if reason}}Reason: {{reason}}\n{{/if}}\nIf you have any questions or wish to provide additional documentation, please contact our team.\n\nBest regards,\nThe Business Bricks Team',
+  email_rejection_body: 'Hi {{firstName}},\n\nThank you for your interest in Business Bricks. After reviewing your application (Ref: {{referenceNumber}}), we are unable to approve wholesale purchasing access at this time.\n\nReason: {{reason}}\n\nIf you have any questions or wish to provide additional documentation, please feel free to reach out to our team at b2b@businessbricks.com.\n\nBest regards,\nThe Business Bricks Team',
   
-  admin_notification_recipients: 'logan@businessbricks.com',
+  email_revocation_subject: 'Notice regarding your Business Bricks wholesale access',
+  email_revocation_body: 'Hi {{firstName}},\n\nThis note is to inform you that wholesale purchasing access for your account associated with {{company}} (Ref: {{referenceNumber}}) has been deactivated.\n\nReason: {{reason}}\n\nIf you believe this was done in error or would like to re-qualify, please contact our team at b2b@businessbricks.com.\n\nBest regards,\nThe Business Bricks Team',
+
+  admin_notification_recipients: 'b2b@businessbricks.com, logan@businessbricks.com',
   admin_notification_enabled: 'true'
 };
 

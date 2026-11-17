@@ -439,6 +439,13 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
     }
   }
 
+  // Send Revocation Notice Email
+  try {
+    await emailService.sendRevocationEmail(application, reason);
+  } catch (emailErr) {
+    console.warn('Warning: Could not send revocation email:', emailErr.message);
+  }
+
   await prisma.auditLog.create({
     data: {
       actor: adminUser,

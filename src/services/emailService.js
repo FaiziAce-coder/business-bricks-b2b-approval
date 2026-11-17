@@ -168,11 +168,38 @@ async function sendRejectionEmail(application, reason = '') {
 }
 
 /**
- * 4. Send Internal Admin Alert for New Wholesale Application
+ * 4. Send Revocation Email to Customer
+ */
+async function sendRevocationEmail(application, reason = '') {
+  const settings = await settingsService.getAllSettings();
+  const vars = {
+    firstName: application.firstName,
+    lastName: application.lastName,
+    company: application.company,
+    referenceNumber: application.referenceNumber,
+    email: application.email,
+    reason: reason || 'Account eligibility change'
+  };
+
+  const subject = renderTemplate(settings.email_revocation_subject, vars);
+  const body = renderTemplate(settings.email_revocation_body, vars);
+
+  return sendEmail({
+    to: application.email,
+    subject,
+    body,
+    templateType: 'REVOCATION',
+    targetId: application.id
+  });
+}
+
+/**
+ * 5. Send Internal Admin Alert for New Wholesale Application
  */
 async function sendAdminNewApplicationAlert(application) {
   const settings = await settingsService.getAllSettings();
-  const recipients = settings.admin_notification_recipients || 'logan@businessbricks.com';
+  const recipients = settings.admin_notification_recipients || 'b2b@businessbricks.com, logan@businessbricks.com';
+  const portalUrl = (process.env.APP_URL || 'https://business-bricks-customer-approval.onrender.com').replace(/\/$/, '');
 
   const subject = `[New Wholesale Application] ${application.company} (${application.referenceNumber})`;
   const body = `A new wholesale customer application has been submitted and is awaiting your review:
@@ -188,7 +215,7 @@ Website: ${application.website || 'N/A'}
 Tax ID: ${application.taxId || 'N/A'}
 
 Review and approve this application in the B2B Customer Approval Portal:
-http://localhost:3000/#applications`;
+${portalUrl}/#applications`;
 
   return sendEmail({
     to: recipients,
@@ -203,6 +230,7 @@ module.exports = {
   sendConfirmationEmail,
   sendApprovalEmail,
   sendRejectionEmail,
+  sendRevocationEmail,
   sendAdminNewApplicationAlert,
   renderTemplate
 };

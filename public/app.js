@@ -291,7 +291,7 @@
   function setFilterStatus(status) {
     state.filters.status = status;
     state.filters.page = 1;
-    document.querySelectorAll('#statusFilterPills .pill').forEach(pill => {
+    document.querySelectorAll('#statusFilterPills .pill, #statusFilterPills .filter-btn').forEach(pill => {
       pill.classList.toggle('active', pill.dataset.status === status);
     });
     loadApplications();
@@ -364,9 +364,18 @@
             }
           }
         }
+        updateDefaultDiscountVisibility();
       }
     } catch (err) {
       console.error('Failed to load settings:', err);
+    }
+  }
+
+  function updateDefaultDiscountVisibility() {
+    const typeSelect = document.getElementById('default_discount_type');
+    const valGroup = document.getElementById('defaultDiscountValueGroup');
+    if (typeSelect && valGroup) {
+      valGroup.style.display = typeSelect.value === 'NONE' ? 'none' : 'block';
     }
   }
 
@@ -375,19 +384,38 @@
     if (el.saveSettingsBtn) el.saveSettingsBtn.disabled = true;
 
     try {
+      const discountType = document.getElementById('default_discount_type')?.value || 'NONE';
+      const discountValRaw = document.getElementById('default_discount_value')?.value || '0';
+      const discountVal = parseFloat(discountValRaw);
+
+      if (discountType === 'PERCENTAGE') {
+        if (isNaN(discountVal) || discountVal < 0 || discountVal > 100) {
+          throw new Error('Percentage discount must be between 0 and 100%');
+        }
+      } else if (discountType === 'FIXED') {
+        if (isNaN(discountVal) || discountVal < 0) {
+          throw new Error('Fixed discount value must be a non-negative number');
+        }
+      }
+
       const payload = {
         b2b_tag_name: document.getElementById('b2b_tag_name')?.value?.trim() || 'b2b-approved',
         auto_tag_customer: document.getElementById('auto_tag_customer')?.checked ? 'true' : 'false',
         require_verified_email: document.getElementById('require_verified_email')?.checked ? 'true' : 'false',
-        order_hold_enabled: document.getElementById('order_hold_enabled')?.checked ? 'true' : 'false'
+        order_hold_enabled: document.getElementById('order_hold_enabled')?.checked ? 'true' : 'false',
+        default_discount_type: discountType,
+        default_discount_value: String(discountType === 'NONE' ? 0 : discountVal)
       };
 
-      await api('/api/admin/settings', {
+      const res = await api('/api/admin/settings', {
         method: 'PUT',
         body: JSON.stringify(payload)
       });
 
       showToast('Settings saved successfully', 'success');
+      if (res && res.settings) {
+        state.settings = res.settings;
+      }
     } catch (err) {
       showToast('Failed to save settings: ' + err.message, 'error');
     } finally {
@@ -628,14 +656,29 @@
   async function handleSaveDiscount() {
     if (!state.activeDiscountAppId) return;
     const discountType = el.discountTypeSelect.value;
-    const discountValue = parseFloat(el.discountValueInput.value) || 0.0;
+    const discountValueRaw = el.discountValueInput.value;
+    const discountValue = parseFloat(discountValueRaw);
+
+    if (discountType === 'PERCENTAGE') {
+      if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+        showToast('Percentage discount must be between 0 and 100%', 'error');
+        return;
+      }
+    } else if (discountType === 'FIXED') {
+      if (isNaN(discountValue) || discountValue < 0) {
+        showToast('Fixed discount value must be a non-negative number', 'error');
+        return;
+      }
+    }
+
+    const finalVal = discountType === 'NONE' ? 0.0 : discountValue;
 
     if (el.saveDiscountBtn) el.saveDiscountBtn.disabled = true;
 
     try {
       await api(`/api/admin/applications/${state.activeDiscountAppId}/discount`, {
         method: 'PUT',
-        body: JSON.stringify({ discountType, discountValue })
+        body: JSON.stringify({ discountType, discountValue: finalVal })
       });
 
       showToast('Future discount configuration saved (inactive)', 'success');
@@ -717,13 +760,19 @@
       });
     }
 
-    // Status filter pills
+    // Status filter buttons
     if (el.statusFilterPills) {
-      el.statusFilterPills.querySelectorAll('.pill').forEach(pill => {
+      el.statusFilterPills.querySelectorAll('.pill, .filter-btn').forEach(pill => {
         pill.addEventListener('click', () => {
           setFilterStatus(pill.dataset.status);
         });
       });
+    }
+
+    // Default discount type in settings
+    const defaultDiscountTypeSelect = document.getElementById('default_discount_type');
+    if (defaultDiscountTypeSelect) {
+      defaultDiscountTypeSelect.addEventListener('change', updateDefaultDiscountVisibility);
     }
 
     // Search input (debounced)

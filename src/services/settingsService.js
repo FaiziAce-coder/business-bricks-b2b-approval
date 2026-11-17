@@ -4,7 +4,9 @@ const DEFAULT_SETTINGS = {
   b2b_tag_name: 'b2b-approved',
   require_verified_email: 'true',
   order_hold_enabled: 'true',
-  auto_tag_customer: 'true'
+  auto_tag_customer: 'true',
+  default_discount_type: 'NONE',
+  default_discount_value: '0'
 };
 
 /**
@@ -22,9 +24,34 @@ async function getAllSettings() {
 }
 
 /**
- * Update multiple settings
+ * Update multiple settings with validation
  */
 async function updateSettings(newSettings) {
+  // Validate discount settings if provided
+  if (newSettings.default_discount_type !== undefined) {
+    const validTypes = ['NONE', 'PERCENTAGE', 'FIXED'];
+    if (!validTypes.includes(newSettings.default_discount_type)) {
+      const err = new Error(`Invalid discount type. Must be one of: ${validTypes.join(', ')}`);
+      err.status = 400;
+      throw err;
+    }
+  }
+
+  if (newSettings.default_discount_value !== undefined) {
+    const val = parseFloat(newSettings.default_discount_value);
+    if (isNaN(val) || val < 0) {
+      const err = new Error('Discount value must be a non-negative number');
+      err.status = 400;
+      throw err;
+    }
+    const type = newSettings.default_discount_type || 'NONE';
+    if (type === 'PERCENTAGE' && val > 100) {
+      const err = new Error('Percentage discount cannot exceed 100%');
+      err.status = 400;
+      throw err;
+    }
+  }
+
   const updates = [];
 
   for (const [key, value] of Object.entries(newSettings)) {

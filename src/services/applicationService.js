@@ -514,11 +514,26 @@ async function updateDiscountConfig(id, { discountType = 'NONE', discountValue =
     throw error;
   }
 
+  const numericValue = parseFloat(discountValue);
+  if (isNaN(numericValue) || numericValue < 0) {
+    const error = new Error('Discount value must be a non-negative number');
+    error.status = 400;
+    throw error;
+  }
+
+  if (discountType === 'PERCENTAGE' && numericValue > 100) {
+    const error = new Error('Percentage discount cannot exceed 100%');
+    error.status = 400;
+    throw error;
+  }
+
+  const finalValue = discountType === 'NONE' ? 0.0 : numericValue;
+
   const updated = await prisma.application.update({
     where: { id },
     data: {
       discountType,
-      discountValue: parseFloat(discountValue) || 0.0
+      discountValue: finalValue
     }
   });
 
@@ -527,7 +542,7 @@ async function updateDiscountConfig(id, { discountType = 'NONE', discountValue =
       actor: 'Administrator',
       action: 'DISCOUNT_CONFIG_UPDATED',
       targetId: id,
-      details: JSON.stringify({ discountType, discountValue })
+      details: JSON.stringify({ discountType, discountValue: finalValue })
     }
   });
 

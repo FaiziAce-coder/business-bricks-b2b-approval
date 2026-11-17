@@ -5,66 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="shopify-api-key" content="b511593a1fd3ef26d3c5412bdd504458" />
   <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
-  <title>Business Bricks — Customer Approval Portal</title>
-  <link rel="stylesheet" href="https://unpkg.com/@shopify/polaris@12.0.0/build/esm/styles.css" />
+  <title>Customer Approval — Business Bricks</title>
   <link rel="stylesheet" href="/app.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div class="app-layout">
-    <!-- Sidebar Navigation -->
+    <!-- Clean, Simple Sidebar -->
     <aside class="app-sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-logo-wrap">
-          <svg width="22" height="26" viewBox="0 0 32 38" fill="none">
-            <path d="M4 10H14V2H4V10Z" fill="#8B2FE0"/>
-            <path d="M18 10H28V2H18V10Z" fill="#8B2FE0"/>
-            <path d="M0 12H32V38H0V12Z" fill="#7B28CC"/>
-            <circle cx="8" cy="20" r="3" fill="#C089F8"/>
-            <circle cx="24" cy="20" r="3" fill="#C089F8"/>
-          </svg>
-          <div class="brand-title">
-            <span>BUSINESS BRICKS</span>
-            <span class="brand-badge">B2B Portal</span>
-          </div>
-        </div>
+      <div class="sidebar-header">
+        <div class="brand-title">Customer Approval</div>
+        <div class="brand-sub">Business Bricks</div>
       </div>
 
       <nav class="sidebar-nav">
         <a href="#dashboard" class="nav-item active" data-view="dashboard">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-          </svg>
           <span>Dashboard</span>
         </a>
         <a href="#applications" class="nav-item" data-view="applications">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-          </svg>
           <span>Applications</span>
-          <span id="pendingNavCount" class="nav-counter" style="display:none;">0</span>
+          <span id="pendingNavCount" class="nav-count" style="display:none;">0</span>
         </a>
         <a href="#customers" class="nav-item" data-view="customers">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-          </svg>
           <span>Customers</span>
         </a>
         <a href="#settings" class="nav-item" data-view="settings">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-          </svg>
           <span>Settings</span>
         </a>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="admin-badge-card">
-          <div class="admin-avatar">L</div>
-          <div class="admin-info">
-            <span class="admin-name">Logan Christensen</span>
-            <span class="admin-role">Store Administrator</span>
-          </div>
+        <div class="user-info">
+          <div class="user-name">Logan Christensen</div>
+          <div class="user-role">Administrator</div>
         </div>
       </div>
     </aside>
@@ -74,67 +46,63 @@
       <header class="topbar">
         <h1 id="pageTitle" class="topbar-title">Dashboard</h1>
         <div class="topbar-actions">
-          <a href="https://promo.businessbricks.com/pages/wholesale-signup" target="_blank" class="btn btn-subtle">
-            <span>View Signup Form ↗</span>
+          <a href="https://promo.businessbricks.com/pages/wholesale-signup" target="_blank" class="btn btn-secondary">
+            View Signup Form ↗
           </a>
           <button id="refreshBtn" class="btn btn-secondary">
-            <span>Refresh</span>
+            Refresh
           </button>
         </div>
       </header>
 
       <div class="content-body">
-        <!-- Notification Toast -->
+        <!-- Notification Message / Toast -->
         <div id="toastMessage" class="toast" style="display:none;"></div>
 
         <!-- ============================================== -->
         <!-- VIEW 1: DASHBOARD -->
         <!-- ============================================== -->
         <section id="view-dashboard" class="portal-view active">
-          <!-- KPI Cards -->
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <span class="kpi-label">Total Applications</span>
-              <span id="kpiTotal" class="kpi-value">0</span>
-              <span class="kpi-subtext">Lifetime wholesale requests</span>
+          <!-- Simple KPI Summary (No oversized cards, no gradients) -->
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Total Applications</div>
+              <div id="kpiTotal" class="stat-val">0</div>
+              <div class="stat-sub">All-time submissions</div>
             </div>
-            <div class="kpi-card highlight-purple">
-              <span class="kpi-label">Pending Review</span>
-              <span id="kpiPending" class="kpi-value text-purple">0</span>
-              <span class="kpi-subtext">Awaiting administrative decision</span>
+            <div class="stat-box">
+              <div class="stat-label">Pending Review</div>
+              <div id="kpiPending" class="stat-val">0</div>
+              <div class="stat-sub">Needs admin action</div>
             </div>
-            <div class="kpi-card highlight-green">
-              <span class="kpi-label">Approved Customers</span>
-              <span id="kpiApproved" class="kpi-value text-green">0</span>
-              <span class="kpi-subtext">Active b2b-approved accounts</span>
+            <div class="stat-box">
+              <div class="stat-label">Approved Customers</div>
+              <div id="kpiApproved" class="stat-val">0</div>
+              <div class="stat-sub">b2b-approved active</div>
             </div>
-            <div class="kpi-card highlight-red">
-              <span class="kpi-label">Rejected / Revoked</span>
-              <span id="kpiRejected" class="kpi-value text-red">0</span>
-              <span class="kpi-subtext">Declined or deactivated</span>
+            <div class="stat-box">
+              <div class="stat-label">Rejected / Revoked</div>
+              <div id="kpiRejected" class="stat-val">0</div>
+              <div class="stat-sub">Access restricted</div>
             </div>
           </div>
 
-          <!-- Pending Applications Prompt -->
-          <div class="card card-banner" id="dashboardPendingBanner" style="display:none;">
-            <div class="banner-body">
-              <div class="banner-icon-purple">⏳</div>
-              <div class="banner-text">
-                <h3>You have pending applications awaiting review</h3>
-                <p>New wholesale applications require verification before purchasing access is granted.</p>
-              </div>
-              <button class="btn btn-primary" onclick="switchView('applications', 'PENDING')">Review Pending Now</button>
+          <!-- Pending Alert Banner (Clean, subtle warning box) -->
+          <div class="alert-box alert-warning" id="dashboardPendingBanner" style="display:none;">
+            <div>
+              <strong>Pending Review:</strong> You have applications awaiting review before purchasing access is granted.
             </div>
+            <button class="btn btn-primary btn-sm" onclick="switchView('applications', 'PENDING')">Review Applications</button>
           </div>
 
           <!-- Recent Applications Table -->
-          <div class="card">
-            <div class="card-header">
+          <div class="panel">
+            <div class="panel-header">
               <h2>Recent Applications</h2>
-              <button class="btn btn-text" onclick="switchView('applications')">View All →</button>
+              <button class="btn btn-link" onclick="switchView('applications')">View All</button>
             </div>
-            <div class="table-responsive">
-              <table class="polaris-table">
+            <div class="table-wrap">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>Ref #</th>
@@ -157,28 +125,23 @@
         <!-- VIEW 2: APPLICATIONS -->
         <!-- ============================================== -->
         <section id="view-applications" class="portal-view">
-          <div class="card">
-            <!-- Table Toolbar: Filters and Search -->
+          <div class="panel">
             <div class="table-toolbar">
-              <div class="filter-pills" id="statusFilterPills">
-                <button class="pill active" data-status="ALL">All</button>
-                <button class="pill" data-status="PENDING">Pending</button>
-                <button class="pill" data-status="APPROVED">Approved</button>
-                <button class="pill" data-status="REJECTED">Rejected</button>
-                <button class="pill" data-status="REVOKED">Revoked</button>
+              <div class="filter-group" id="statusFilterPills">
+                <button class="filter-btn active" data-status="ALL">All</button>
+                <button class="filter-btn" data-status="PENDING">Pending</button>
+                <button class="filter-btn" data-status="APPROVED">Approved</button>
+                <button class="filter-btn" data-status="REJECTED">Rejected</button>
+                <button class="filter-btn" data-status="REVOKED">Revoked</button>
               </div>
 
-              <div class="search-wrap">
-                <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-                </svg>
-                <input type="text" id="appSearchInput" placeholder="Search by name, company, email, ref #…" class="search-input" />
+              <div class="search-box">
+                <input type="text" id="appSearchInput" placeholder="Search name, company, email, ref #…" class="form-input" />
               </div>
             </div>
 
-            <!-- Applications Data Table -->
-            <div class="table-responsive">
-              <table class="polaris-table">
+            <div class="table-wrap">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>Ref #</th>
@@ -197,10 +160,9 @@
               </table>
             </div>
 
-            <!-- Pagination -->
-            <div class="table-pagination">
-              <span id="paginationText" class="pagination-info">Showing 0 of 0</span>
-              <div class="pagination-buttons">
+            <div class="table-footer">
+              <span id="paginationText" class="table-info">Showing 0 of 0</span>
+              <div class="btn-group">
                 <button id="prevPageBtn" class="btn btn-secondary btn-sm" disabled>Previous</button>
                 <button id="nextPageBtn" class="btn btn-secondary btn-sm" disabled>Next</button>
               </div>
@@ -212,16 +174,16 @@
         <!-- VIEW 3: CUSTOMERS -->
         <!-- ============================================== -->
         <section id="view-customers" class="portal-view">
-          <div class="card">
-            <div class="card-header">
+          <div class="panel">
+            <div class="panel-header">
               <div>
                 <h2>Approved B2B Customers</h2>
-                <p class="text-muted text-sm">Customers authorized to purchase semi-custom sets with tag <code>b2b-approved</code></p>
+                <div class="text-muted text-sm">Customers authorized to purchase semi-custom sets (Shopify tag: <code>b2b-approved</code>)</div>
               </div>
             </div>
 
-            <div class="table-responsive">
-              <table class="polaris-table">
+            <div class="table-wrap">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>Customer Name</th>
@@ -245,72 +207,88 @@
         <!-- VIEW 4: SETTINGS -->
         <!-- ============================================== -->
         <section id="view-settings" class="portal-view">
-          <form id="settingsForm" class="settings-form">
-            <!-- B2B Customer Tagging -->
-            <div class="card">
-              <div class="card-header">
+          <form id="settingsForm">
+            <!-- 1. Tag Synchronization -->
+            <div class="panel">
+              <div class="panel-header">
                 <h2>1. Shopify Tag Synchronization</h2>
               </div>
-              <div class="card-body">
-                <p class="text-muted text-sm mb-3">Tag added to the customer in Shopify Admin when an application is approved.</p>
+              <div class="panel-body">
                 <div class="form-group mb-3">
                   <label for="b2b_tag_name">B2B Customer Tag Name</label>
-                  <input type="text" id="b2b_tag_name" class="form-control" value="b2b-approved" />
+                  <input type="text" id="b2b_tag_name" class="form-input" value="b2b-approved" />
+                  <span class="text-muted text-xs">This tag is applied to approved Shopify customer profiles to grant access.</span>
                 </div>
                 <div class="form-group">
-                  <label>
+                  <label class="checkbox-label">
                     <input type="checkbox" id="auto_tag_customer" value="true" checked />
-                    Automatically synchronize tag to Shopify customer upon admin approval
+                    Automatically apply tag to Shopify customer upon admin approval
                   </label>
                 </div>
               </div>
             </div>
 
-            <!-- Verification & Security Policy -->
-            <div class="card">
-              <div class="card-header">
-                <h2>2. Verification &amp; Security Policy</h2>
+            <!-- 2. Verification Policy -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2>2. Customer Verification &amp; Security Policy</h2>
               </div>
-              <div class="card-body">
-                <p class="text-muted text-sm mb-3">Enforce customer identity and email ownership before granting purchasing access.</p>
-                <div class="form-group mb-3">
-                  <label>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label class="checkbox-label">
                     <input type="checkbox" id="require_verified_email" value="true" checked />
-                    Require email ownership verification or matching authenticated Shopify customer before approving
+                    Require verified email or existing authenticated customer account before approval
                   </label>
-                  <p class="text-xs text-muted mt-1">Prevents unauthorized approval based solely on unverified application form entries.</p>
+                  <span class="text-muted text-xs">Protects against approving unverified email addresses.</span>
                 </div>
               </div>
             </div>
 
-            <!-- Fulfillment Hold Backstop -->
-            <div class="card">
-              <div class="card-header">
-                <h2>3. Shopify Flow &amp; Webhook Backstop</h2>
+            <!-- 3. Fulfillment Hold Backstop -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2>3. Shopify Flow &amp; Fulfillment Hold Backstop</h2>
               </div>
-              <div class="card-body">
-                <p class="text-muted text-sm mb-3">Server-side defense to intercept unauthorized checkouts of semi-custom products.</p>
-                <div class="form-group mb-3">
-                  <label>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label class="checkbox-label">
                     <input type="checkbox" id="order_hold_enabled" value="true" checked />
-                    Place fulfillment holds on orders containing semi-custom products placed by non-approved accounts
+                    Place fulfillment holds on unauthorized semi-custom orders placed without b2b-approved tag
                   </label>
+                  <span class="text-muted text-xs">Server-side defense preventing fulfillment of bypassed orders.</span>
                 </div>
               </div>
             </div>
 
-            <!-- Future Discount Policy (Informational) -->
-            <div class="card">
-              <div class="card-header">
-                <h2>4. Pricing &amp; Discount Architecture</h2>
+            <!-- 4. Default Discount Architecture (Strictly Inactive) -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2>4. Pricing &amp; Future Discount Architecture</h2>
               </div>
-              <div class="card-body">
-                <p class="text-muted text-sm mb-2">Per project requirements, discount architecture is prepared in the database schema but strictly <strong>disabled</strong> in this release.</p>
-                <span class="badge badge-pending">Discounts Inactive (NONE / 0.0%)</span>
+              <div class="panel-body">
+                <p class="text-muted text-sm mb-3">
+                  Per project rules, discount architecture is stored for future capabilities but is <strong>strictly inactive</strong>. Product prices, variants, cart totals, and checkout amounts remain unaffected.
+                </p>
+                <div class="form-group mb-3">
+                  <label for="default_discount_type">Default Future Discount Type</label>
+                  <select id="default_discount_type" class="form-input">
+                    <option value="NONE">None (0.0% - Inactive)</option>
+                    <option value="PERCENTAGE">Percentage (%) - Inactive</option>
+                    <option value="FIXED">Fixed Amount ($) - Inactive</option>
+                  </select>
+                </div>
+                <div class="form-group mb-3" id="defaultDiscountValueGroup" style="display:none;">
+                  <label for="default_discount_value">Default Discount Value</label>
+                  <input type="number" id="default_discount_value" class="form-input" step="0.01" min="0" value="0.00" />
+                  <span class="text-muted text-xs" id="discountValueHelp">Enter percentage (0-100) or fixed amount.</span>
+                </div>
+                <div class="alert-box alert-info">
+                  <strong>Policy Status:</strong> Discounts are inactive. Changing customer approval status does not activate discounts.
+                </div>
               </div>
             </div>
 
-            <div class="settings-actions">
+            <div class="form-actions">
               <button type="submit" id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
             </div>
           </form>
@@ -326,8 +304,8 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <span id="modalRefPill" class="ref-badge">BB-APP-1001</span>
-          <h2 id="modalApplicantName">Applicant Details</h2>
+          <span id="modalRefPill" class="ref-tag">BB-APP-1001</span>
+          <h2 id="modalApplicantName" style="margin: 4px 0 0 0; font-size: 16px;">Applicant Details</h2>
         </div>
         <button class="modal-close" onclick="closeModal('appModal')">✕</button>
       </div>
@@ -348,14 +326,14 @@
   <div id="confirmModal" class="modal-overlay" style="display:none;">
     <div class="modal-dialog modal-sm">
       <div class="modal-header">
-        <h3 id="confirmModalTitle">Confirm Action</h3>
+        <h3 id="confirmModalTitle" style="margin:0; font-size: 15px;">Confirm Action</h3>
         <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
       </div>
       <div class="modal-body">
-        <p id="confirmModalMessage">Are you sure you want to perform this action?</p>
-        <div id="confirmNotesGroup" class="form-group mt-3" style="display:none;">
+        <p id="confirmModalMessage" style="margin: 0 0 12px 0;">Are you sure you want to perform this action?</p>
+        <div id="confirmNotesGroup" class="form-group" style="display:none;">
           <label id="confirmNotesLabel" for="confirmNotesInput">Notes / Reason</label>
-          <textarea id="confirmNotesInput" class="form-control" rows="3"></textarea>
+          <textarea id="confirmNotesInput" class="form-input" rows="3"></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -371,16 +349,16 @@
   <div id="discountModal" class="modal-overlay" style="display:none;">
     <div class="modal-dialog modal-sm">
       <div class="modal-header">
-        <h3>Customer Future Discount</h3>
+        <h3 style="margin:0; font-size: 15px;">Customer Future Discount</h3>
         <button class="modal-close" onclick="closeModal('discountModal')">✕</button>
       </div>
       <div class="modal-body">
-        <div class="alert-info mb-3">
-          <strong>Note:</strong> Future discounts are stored in the database but are <strong>disabled by default</strong> in this release. Product prices will not be modified.
+        <div class="alert-box alert-info mb-3">
+          <strong>Note:</strong> Future discounts are stored in the database but remain <strong>inactive</strong> in this release. Storefront prices are unaffected.
         </div>
         <div class="form-group mb-3">
           <label for="discountTypeSelect">Discount Type</label>
-          <select id="discountTypeSelect" class="form-control">
+          <select id="discountTypeSelect" class="form-input">
             <option value="NONE">No Discount (Default)</option>
             <option value="PERCENTAGE">Percentage Discount (%)</option>
             <option value="FIXED">Fixed Amount Discount ($)</option>
@@ -388,7 +366,8 @@
         </div>
         <div class="form-group" id="discountValueGroup" style="display:none;">
           <label for="discountValueInput">Discount Value</label>
-          <input type="number" id="discountValueInput" class="form-control" step="0.01" min="0" value="0.00" />
+          <input type="number" id="discountValueInput" class="form-input" step="0.01" min="0" value="0.00" />
+          <span class="text-muted text-xs mt-1">Value must be non-negative (max 100% for percentage).</span>
         </div>
       </div>
       <div class="modal-footer">

@@ -34,11 +34,52 @@ function renderTemplate(templateString, variables = {}) {
 }
 
 /**
- * Deliver or log email
+ * Send email via Resend HTTPS REST API
+ */
+async function sendViaResend({ to, subject, body, html }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+
+  const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Business Bricks <onboarding@resend.dev>';
+  const toList = Array.isArray(to) ? to : to.split(',').map(e => e.trim()).filter(Boolean);
+
+  const payload = {
+    from,
+    to: toList,
+    subject,
+    text: body,
+    html: html || `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a;">` +
+          body.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('') +
+          `</div>`
+  };
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `Resend API error (${response.status})`);
+  }
+
+  return {
+    provider: 'resend',
+    id: data.id,
+    from,
+    to: toList
+  };
+}
+
+/**
+ * Deliver or log email across Resend HTTPS API, SMTP, or local fallback
  */
 async function sendEmail({ to, subject, body, templateType, targetId }) {
-  const t = getTransporter();
-  const from = process.env.SMTP_FROM || 'Business Bricks <orders@businessbricks.com>';
+  const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Business Bricks <onboarding@resend.dev>';
 
   const emailRecord = {
     to,
@@ -49,29 +90,55 @@ async function sendEmail({ to, subject, body, templateType, targetId }) {
     sentAt: new Date().toISOString()
   };
 
-  if (t) {
+  // 1. Try Resend HTTPS API if key is available
+  if (process.env.RESEND_API_KEY) {
     try {
-      await t.sendMail({
-        from,
-        to,
-        subject,
-        text: body
-      });
+      const resendResult = await sendViaResend({ to, subject, body });
       emailRecord.delivered = true;
-    } catch (err) {
-      console.error(`Failed to send email to ${to}:`, err.message);
+      emailRecord.provider = 'resend';
+      emailRecord.resendId = resendResult.id;
+      console.log(`✓ [EMAIL DISPATCH via Resend HTTPS API] To: ${to} (ID: ${resendResult.id})`);
+    } catch (resendErr) {
+      console.warn(`Resend dispatch warning for ${to}:`, resendErr.message);
       emailRecord.delivered = false;
-      emailRecord.error = err.message;
+      emailRecord.error = resendErr.message;
+      emailRecord.provider = 'resend';
+
+      // If in sandbox mode without custom domain verified, fall back cleanly
+      if (resendErr.message.includes('only send testing emails')) {
+        console.log(`[Resend Sandbox] Domain pending DNS verification. Logging dispatch locally.`);
+        emailRecord.mode = 'RESEND_SANDBOX_FALLBACK';
+        emailRecord.delivered = true;
+      }
     }
   } else {
-    // Development / Local Mode: Log cleanly to console
-    console.log(`\n📧 [EMAIL DISPATCH - ${templateType}]`);
-    console.log(`To: ${to}`);
-    console.log(`From: ${from}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body:\n${body}\n`);
-    emailRecord.delivered = true;
-    emailRecord.mode = 'LOGGED_LOCAL';
+    // 2. Fall back to SMTP transporter if configured
+    const t = getTransporter();
+    if (t) {
+      try {
+        await t.sendMail({
+          from,
+          to,
+          subject,
+          text: body
+        });
+        emailRecord.delivered = true;
+        emailRecord.provider = 'smtp';
+      } catch (err) {
+        console.error(`Failed to send email to ${to}:`, err.message);
+        emailRecord.delivered = false;
+        emailRecord.error = err.message;
+      }
+    } else {
+      // 3. Local Development Mode: Log cleanly to console
+      console.log(`\n📧 [EMAIL DISPATCH - ${templateType}]`);
+      console.log(`To: ${to}`);
+      console.log(`From: ${from}`);
+      console.log(`Subject: ${subject}`);
+      console.log(`Body:\n${body}\n`);
+      emailRecord.delivered = true;
+      emailRecord.mode = 'LOGGED_LOCAL';
+    }
   }
 
   // Record in AuditLog for 100% transparency

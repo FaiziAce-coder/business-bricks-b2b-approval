@@ -485,11 +485,13 @@
         `;
       } else if (app.status === 'APPROVED') {
         actionsHtml += `
+          <button class="btn btn-secondary" onclick="promptKeepPending('${app.id}', '${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}')">Keep Pending</button>
           <button class="btn btn-danger" onclick="promptRevoke('${app.id}', '${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}')">Revoke Access</button>
         `;
       } else if (app.status === 'REJECTED' || app.status === 'REVOKED') {
         actionsHtml += `
-          <button class="btn btn-success" onclick="promptApprove('${app.id}', '${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}')">Re-Approve Access</button>
+          <button class="btn btn-secondary" onclick="promptKeepPending('${app.id}', '${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}')">Keep Pending</button>
+          <button class="btn btn-success" onclick="promptApprove('${app.id}', '${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}')">Approve Access</button>
         `;
       }
 
@@ -540,9 +542,22 @@
     el.confirmModal.style.display = 'flex';
   }
 
+  function promptKeepPending(id, applicantName) {
+    state.pendingAction = { type: 'PENDING', id, name: applicantName };
+    el.confirmModalTitle.innerText = 'Keep / Reset to Pending';
+    el.confirmModalMessage.innerText = `Are you sure you want to set ${applicantName}'s application status to Pending? In Shopify, the customer tag will be set to 'b2b-pending'.`;
+    el.confirmNotesGroup.style.display = 'block';
+    el.confirmNotesLabel.innerText = 'Internal Notes (Optional)';
+    el.confirmNotesInput.value = '';
+    el.confirmExecuteBtn.className = 'btn btn-secondary';
+    el.confirmExecuteBtn.innerText = 'Set to Pending';
+    el.confirmModal.style.display = 'flex';
+  }
+
   window.promptApprove = promptApprove;
   window.promptReject = promptReject;
   window.promptRevoke = promptRevoke;
+  window.promptKeepPending = promptKeepPending;
 
   async function executeConfirmAction() {
     if (!state.pendingAction) return;
@@ -571,6 +586,12 @@
           body: JSON.stringify({ adminUser: 'Logan Christensen', reason: notes })
         });
         showToast('Wholesale access revoked', 'info');
+      } else if (type === 'PENDING') {
+        res = await api(`/api/admin/applications/${id}/pending`, {
+          method: 'POST',
+          body: JSON.stringify({ adminUser: 'Logan Christensen', notes })
+        });
+        showToast('Application set to pending', 'info');
       }
 
       closeModal('confirmModal');

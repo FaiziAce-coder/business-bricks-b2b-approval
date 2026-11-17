@@ -1,7 +1,7 @@
 /**
  * Shopify Customer Service
  * Handles customer queries, customer ID resolution, tag management,
- * and metafield synchronization using the Shopify Admin GraphQL API.
+ * and customer creation using the Shopify Admin GraphQL API.
  */
 
 const https = require('https');
@@ -20,7 +20,6 @@ const API_VERSION = '2026-10';
  * Execute a GraphQL query or mutation against Shopify Admin API.
  */
 async function executeGraphQL(query, variables = {}, accessToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN) {
-  // If running in local mock/testing mode without access token, return mock response
   if (!accessToken) {
     return { mock: true, message: 'Running in local dev mode without active token' };
   }
@@ -61,7 +60,6 @@ async function executeGraphQL(query, variables = {}, accessToken = process.env.S
 
 /**
  * Find customer by email in Shopify.
- * Returns customer ID, tags, verifiedEmail flag, and display name.
  */
 async function findCustomerByEmail(email, accessToken) {
   const query = `
@@ -82,9 +80,7 @@ async function findCustomerByEmail(email, accessToken) {
   `;
 
   const data = await executeGraphQL(query, { query: `email:${email}` }, accessToken);
-  if (data?.mock) {
-    return null;
-  }
+  if (data?.mock) return null;
 
   const edge = data?.customers?.edges?.[0];
   if (!edge) return null;
@@ -116,17 +112,17 @@ async function findCustomerById(customerId, accessToken) {
 }
 
 /**
- * Grant B2B approval in Shopify:
- * Adds 'b2b-approved' tag and sets metafield custom.b2b_verified to true.
+ * Create a new customer profile in Shopify if one does not exist.
  */
-async function grantB2BApproval(customerId, accessToken) {
-  const formattedId = customerId.startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
-  
+async function createCustomer({ firstName, lastName, email, company, phone, tags = ['b2b-pending'] }, accessToken) {
   const mutation = `
-    mutation customerUpdate($input: CustomerInput!) {
-      customerUpdate(input: $input) {
+    mutation customerCreate($input: CustomerInput!) {
+      customerCreate(input: $input) {
         customer {
           id
+          firstName
+          lastName
+          email
           tags
         }
         userErrors {
@@ -137,33 +133,45 @@ async function grantB2BApproval(customerId, accessToken) {
     }
   `;
 
-  // First fetch existing tags to avoid overwriting
-  const customer = await findCustomerById(formattedId, accessToken);
-  let tags = customer ? [...customer.tags] : [];
-  if (!tags.includes('b2b-approved')) {
-    tags.push('b2b-approved');
-  }
-
   const input = {
-    id: formattedId,
-    tags: tags
+    firstName,
+    lastName,
+    email,
+    phone: phone ? phone.replace(/[^\d+]/g, '') : undefined,
+    note: company ? `Wholesale Company: ${company}` : undefined,
+    tags
   };
 
   const data = await executeGraphQL(mutation, { input }, accessToken);
-  return data;
+  if (data?.mock) return { id: 'gid://shopify/Customer/mock-id', ...input };
+
+  if (data?.customerCreate?.userErrors && data.customerCreate.userErrors.length > 0) {
+    throw new Error(data.customerCreate.userErrors.map(e => e.message).join(', '));
+  }
+
+  return data?.customerCreate?.customer || null;
 }
 
 /**
- * Revoke B2B approval in Shopify:
- * Removes 'b2b-approved' tag from customer.
+ * Synchronize B2B status tags on a customer:
+ * Handles b2b-pending, b2b-approved, and b2b-rejected consistently
+ * while preserving any non-B2B custom tags.
  */
-async function revokeB2BApproval(customerId, accessToken) {
+async function syncCustomerStatusTag(customerId, newStatus, accessToken) {
   const formattedId = customerId.startsWith('gid://') ? customerId : `gid://shopify/Customer/${customerId}`;
-  
   const customer = await findCustomerById(formattedId, accessToken);
   if (!customer) return null;
 
-  const tags = customer.tags.filter(t => t !== 'b2b-approved');
+  // Filter out any existing B2B status tags to avoid contradictory states
+  const preservedTags = customer.tags.filter(t => !['b2b-approved', 'b2b-pending', 'b2b-rejected'].includes(t.toLowerCase()));
+
+  if (newStatus === 'APPROVED') {
+    preservedTags.push('b2b-approved');
+  } else if (newStatus === 'PENDING') {
+    preservedTags.push('b2b-pending');
+  } else if (newStatus === 'REJECTED' || newStatus === 'REVOKED') {
+    preservedTags.push('b2b-rejected');
+  }
 
   const mutation = `
     mutation customerUpdate($input: CustomerInput!) {
@@ -180,14 +188,33 @@ async function revokeB2BApproval(customerId, accessToken) {
     }
   `;
 
-  const data = await executeGraphQL(mutation, { input: { id: formattedId, tags } }, accessToken);
-  return data;
+  return await executeGraphQL(mutation, { input: { id: formattedId, tags: preservedTags } }, accessToken);
+}
+
+async function grantB2BApproval(customerId, accessToken) {
+  return syncCustomerStatusTag(customerId, 'APPROVED', accessToken);
+}
+
+async function rejectB2BApplication(customerId, accessToken) {
+  return syncCustomerStatusTag(customerId, 'REJECTED', accessToken);
+}
+
+async function revokeB2BApproval(customerId, accessToken) {
+  return syncCustomerStatusTag(customerId, 'REVOKED', accessToken);
+}
+
+async function markB2BPending(customerId, accessToken) {
+  return syncCustomerStatusTag(customerId, 'PENDING', accessToken);
 }
 
 module.exports = {
   executeGraphQL,
   findCustomerByEmail,
   findCustomerById,
+  createCustomer,
+  syncCustomerStatusTag,
   grantB2BApproval,
-  revokeB2BApproval
+  rejectB2BApplication,
+  revokeB2BApproval,
+  markB2BPending
 };

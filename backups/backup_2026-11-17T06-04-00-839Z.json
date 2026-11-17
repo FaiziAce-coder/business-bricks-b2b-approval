@@ -1,0 +1,218 @@
+{
+  "metadata": {
+    "exportedAt": "2026-11-17T06:04:10.835Z",
+    "sourceUrl": "postgresql://neondb_owner:****@ep-crimson-night-bc9eip9p-pooler.c-16.us-east-1.aws.neon.tech/neondb?sslmode=require",
+    "counts": {
+      "applications": 2,
+      "statusHistory": 4,
+      "auditLogs": 5,
+      "appSettings": 4
+    }
+  },
+  "data": {
+    "applications": [
+      {
+        "id": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "referenceNumber": "BB-APP-1001",
+        "firstName": "Test",
+        "lastName": "Wholesale Partner",
+        "email": "b2b-test@businessbricks.com",
+        "company": "Apex Retail Solutions",
+        "phone": "555-234-5678",
+        "businessType": "Retailer/Store",
+        "address1": "123 Commerce St",
+        "address2": null,
+        "city": "Chicago",
+        "province": "IL",
+        "zip": "60601",
+        "country": "United States",
+        "website": "https://apexretail.example.com",
+        "taxId": "TAX-998877",
+        "status": "REVOKED",
+        "shopifyCustomerId": null,
+        "emailVerified": true,
+        "emailVerificationToken": null,
+        "emailVerifiedAt": "2026-11-17T04:22:23.867Z",
+        "adminNotes": "Quality assurance test of revocation enforcement",
+        "discountType": "NONE",
+        "discountValue": 0,
+        "createdAt": "2026-11-17T04:21:49.666Z",
+        "updatedAt": "2026-11-17T04:22:49.883Z",
+        "history": [
+          {
+            "id": "abee33d0-2a71-422b-bb11-28a3a5776e7f",
+            "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+            "previousStatus": "PENDING",
+            "newStatus": "PENDING",
+            "changedBy": "Applicant",
+            "reason": "Initial application submission",
+            "timestamp": "2026-11-17T04:21:49.731Z"
+          },
+          {
+            "id": "aaaab480-a734-47eb-92eb-924ee2156e27",
+            "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+            "previousStatus": "PENDING",
+            "newStatus": "APPROVED",
+            "changedBy": "Logan Christensen",
+            "reason": "Approved for wholesale purchasing - Verified business registration",
+            "timestamp": "2026-11-17T04:22:30.885Z"
+          },
+          {
+            "id": "50e9fb23-f74e-4866-9300-0ddebc7d61be",
+            "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+            "previousStatus": "APPROVED",
+            "newStatus": "REVOKED",
+            "changedBy": "Logan Christensen",
+            "reason": "Quality assurance test of revocation enforcement",
+            "timestamp": "2026-11-17T04:22:49.886Z"
+          }
+        ]
+      },
+      {
+        "id": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
+        "referenceNumber": "BB-APP-1002",
+        "firstName": "Faizi",
+        "lastName": "Ace",
+        "email": "ecombuilderfaizi@gmail.com",
+        "company": "Acme crop",
+        "phone": "+1 (555) 019-2834",
+        "businessType": "Retailer / Store",
+        "address1": "1600 Pennsylvania Avenue NW",
+        "address2": null,
+        "city": "Washington",
+        "province": "DC",
+        "zip": "2537",
+        "country": "United States",
+        "website": null,
+        "taxId": null,
+        "status": "PENDING",
+        "shopifyCustomerId": null,
+        "emailVerified": false,
+        "emailVerificationToken": "ZWNvbWJ1aWxkZXJmYWl6aUBnbWFpbC5jb206MTc5NDg4OTU5OTQzODo3ZmU4YTY5OTEwNjk2NjQ3NDE1MzA3YjAxMjQ2NGNhZWY4Nzc3ODZmNTA3ZmU1OGJlNjQ5ZjkyYzYwOWQ1MDE0",
+        "emailVerifiedAt": null,
+        "adminNotes": null,
+        "discountType": "NONE",
+        "discountValue": 0,
+        "createdAt": "2026-11-17T04:26:39.441Z",
+        "updatedAt": "2026-11-17T04:26:39.441Z",
+        "history": [
+          {
+            "id": "a8b56742-855d-4d83-8308-676053ba36bd",
+            "applicationId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
+            "previousStatus": "PENDING",
+            "newStatus": "PENDING",
+            "changedBy": "Applicant",
+            "reason": "Initial application submission",
+            "timestamp": "2026-11-17T04:26:39.446Z"
+          }
+        ]
+      }
+    ],
+    "statusHistory": [
+      {
+        "id": "abee33d0-2a71-422b-bb11-28a3a5776e7f",
+        "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "previousStatus": "PENDING",
+        "newStatus": "PENDING",
+        "changedBy": "Applicant",
+        "reason": "Initial application submission",
+        "timestamp": "2026-11-17T04:21:49.731Z"
+      },
+      {
+        "id": "aaaab480-a734-47eb-92eb-924ee2156e27",
+        "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "previousStatus": "PENDING",
+        "newStatus": "APPROVED",
+        "changedBy": "Logan Christensen",
+        "reason": "Approved for wholesale purchasing - Verified business registration",
+        "timestamp": "2026-11-17T04:22:30.885Z"
+      },
+      {
+        "id": "50e9fb23-f74e-4866-9300-0ddebc7d61be",
+        "applicationId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "previousStatus": "APPROVED",
+        "newStatus": "REVOKED",
+        "changedBy": "Logan Christensen",
+        "reason": "Quality assurance test of revocation enforcement",
+        "timestamp": "2026-11-17T04:22:49.886Z"
+      },
+      {
+        "id": "a8b56742-855d-4d83-8308-676053ba36bd",
+        "applicationId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
+        "previousStatus": "PENDING",
+        "newStatus": "PENDING",
+        "changedBy": "Applicant",
+        "reason": "Initial application submission",
+        "timestamp": "2026-11-17T04:26:39.446Z"
+      }
+    ],
+    "auditLogs": [
+      {
+        "id": "6a8fcbda-c61c-4279-9488-adcf8b917d60",
+        "actor": "b2b-test@businessbricks.com",
+        "action": "APPLICATION_SUBMITTED",
+        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "details": "{\"company\":\"Apex Retail Solutions\",\"country\":\"United States\"}",
+        "timestamp": "2026-11-17T04:21:49.735Z"
+      },
+      {
+        "id": "716dd2a6-d635-481d-bd3f-05b65c6a7c26",
+        "actor": "b2b-test@businessbricks.com",
+        "action": "EMAIL_VERIFIED",
+        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "details": "{\"verifiedAt\":\"2026-11-17T04:22:23.867Z\"}",
+        "timestamp": "2026-11-17T04:22:23.970Z"
+      },
+      {
+        "id": "fd338db0-8d3a-4158-8e26-38184bb51796",
+        "actor": "Logan Christensen",
+        "action": "APPLICATION_APPROVED",
+        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "details": "{\"email\":\"b2b-test@businessbricks.com\",\"shopifyCustomerId\":null}",
+        "timestamp": "2026-11-17T04:22:30.888Z"
+      },
+      {
+        "id": "8936718b-3cdc-4843-9245-16d790f8b45e",
+        "actor": "Logan Christensen",
+        "action": "ACCESS_REVOKED",
+        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
+        "details": "{\"email\":\"b2b-test@businessbricks.com\",\"reason\":\"Quality assurance test of revocation enforcement\"}",
+        "timestamp": "2026-11-17T04:22:49.896Z"
+      },
+      {
+        "id": "df3ae747-37d9-4c09-afd7-e01e777cffe1",
+        "actor": "ecombuilderfaizi@gmail.com",
+        "action": "APPLICATION_SUBMITTED",
+        "targetId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
+        "details": "{\"company\":\"Acme crop\",\"country\":\"United States\"}",
+        "timestamp": "2026-11-17T04:26:39.449Z"
+      }
+    ],
+    "appSettings": [
+      {
+        "id": "e04d9dc8-ebab-4645-9379-2abfc4fb78c4",
+        "key": "b2b_tag_name",
+        "value": "b2b-approved",
+        "updatedAt": "2026-11-17T05:07:08.270Z"
+      },
+      {
+        "id": "74900778-ad7c-49cd-a702-3ec92db94d27",
+        "key": "require_verified_email",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:10.150Z"
+      },
+      {
+        "id": "8e90eb79-8c31-48ad-8398-1e2b8df6b86b",
+        "key": "order_hold_enabled",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:11.350Z"
+      },
+      {
+        "id": "21a79be0-d75f-49ab-b2a5-4e4537d03ee9",
+        "key": "auto_tag_customer",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:12.472Z"
+      }
+    ]
+  }
+}

@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "exportedAt": "2026-11-17T04:39:59.545Z",
-    "sourceUrl": "postgresql://bricks_admin:****@dpg-dbtt80rm8hqs73dg9eig-a.oregon-postgres.render.com/business_bricks",
+    "exportedAt": "2026-11-17T06:04:10.835Z",
+    "sourceUrl": "postgresql://neondb_owner:****@ep-crimson-night-bc9eip9p-pooler.c-16.us-east-1.aws.neon.tech/neondb?sslmode=require",
     "counts": {
       "applications": 2,
       "statusHistory": 4,
-      "auditLogs": 11,
-      "appSettings": 0
+      "auditLogs": 5,
+      "appSettings": 4
     }
   },
   "data": {
@@ -156,22 +156,6 @@
         "timestamp": "2026-11-17T04:21:49.735Z"
       },
       {
-        "id": "f29f8abc-0b3e-48e8-840b-d30b155abab4",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_CONFIRMATION",
-        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
-        "details": "{\"to\":\"b2b-test@businessbricks.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"We received your wholesale application — Business Bricks\",\"body\":\"Hi Test,\\n\\nThank you for applying for wholesale access to Business Bricks. Your application (Ref: BB-APP-1001) has been received and is currently under administrative review.\\n\\nOur team will review your business details and notify you once your account has been approved.\\n\\nBest regards,\\nThe Business Bricks Team\",\"templateType\":\"CONFIRMATION\",\"sentAt\":\"2026-11-17T04:21:49.739Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:21:49.743Z"
-      },
-      {
-        "id": "20a123c0-c8a0-4b2e-994e-026e069240ad",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_ADMIN_ALERT",
-        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
-        "details": "{\"to\":\"b2b@businessbricks.com, logan@businessbricks.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"[New Wholesale Application] Apex Retail Solutions (BB-APP-1001)\",\"body\":\"A new wholesale customer application has been submitted and is awaiting your review:\\n\\nReference: BB-APP-1001\\nApplicant: Test Wholesale Partner\\nCompany: Apex Retail Solutions\\nEmail: b2b-test@businessbricks.com\\nPhone: 555-234-5678\\nBusiness Type: Retailer/Store\\nLocation: Chicago, IL United States\\nWebsite: https://apexretail.example.com\\nTax ID: TAX-998877\\n\\nReview and approve this application in the B2B Customer Approval Portal:\\nhttps://business-bricks-customer-approval.onrender.com/#applications\",\"templateType\":\"ADMIN_ALERT\",\"sentAt\":\"2026-11-17T04:21:49.752Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:21:49.753Z"
-      },
-      {
         "id": "716dd2a6-d635-481d-bd3f-05b65c6a7c26",
         "actor": "b2b-test@businessbricks.com",
         "action": "EMAIL_VERIFIED",
@@ -188,22 +172,6 @@
         "timestamp": "2026-11-17T04:22:30.888Z"
       },
       {
-        "id": "ccbd6188-940e-4e4a-9eab-04f36927671e",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_APPROVAL",
-        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
-        "details": "{\"to\":\"b2b-test@businessbricks.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"Your Business Bricks wholesale account is approved!\",\"body\":\"Hi Test,\\n\\nCongratulations! Your application for wholesale purchasing access with Business Bricks (Ref: BB-APP-1001) has been approved.\\n\\nYou can now browse and purchase our semi-custom collections directly at:\\nhttps://promo.businessbricks.com/pages/semi-custom-sets\\n\\nTo access approved purchasing, simply sign in using your application email (b2b-test@businessbricks.com). Shopify will deliver a 6-digit one-time access code to your inbox.\\n\\nBest regards,\\nLogan Christensen\\nBusiness Bricks\",\"templateType\":\"APPROVAL\",\"sentAt\":\"2026-11-17T04:22:30.892Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:22:30.895Z"
-      },
-      {
-        "id": "390346d6-f0fd-4af6-bd24-c6ca02939a3c",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_REVOCATION",
-        "targetId": "419ecf1e-90f7-4aa9-a58b-4db3208b1d33",
-        "details": "{\"to\":\"b2b-test@businessbricks.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"Notice regarding your Business Bricks wholesale access\",\"body\":\"Hi Test,\\n\\nThis note is to inform you that wholesale purchasing access for your account associated with Apex Retail Solutions (Ref: BB-APP-1001) has been deactivated.\\n\\nReason: Quality assurance test of revocation enforcement\\n\\nIf you believe this was done in error or would like to re-qualify, please contact our team at b2b@businessbricks.com.\\n\\nBest regards,\\nThe Business Bricks Team\",\"templateType\":\"REVOCATION\",\"sentAt\":\"2026-11-17T04:22:49.888Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:22:49.894Z"
-      },
-      {
         "id": "8936718b-3cdc-4843-9245-16d790f8b45e",
         "actor": "Logan Christensen",
         "action": "ACCESS_REVOKED",
@@ -218,24 +186,33 @@
         "targetId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
         "details": "{\"company\":\"Acme crop\",\"country\":\"United States\"}",
         "timestamp": "2026-11-17T04:26:39.449Z"
-      },
-      {
-        "id": "a0d0a36a-2bae-475b-8bf1-2706cb6a51de",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_CONFIRMATION",
-        "targetId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
-        "details": "{\"to\":\"ecombuilderfaizi@gmail.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"We received your wholesale application — Business Bricks\",\"body\":\"Hi Faizi,\\n\\nThank you for applying for wholesale access to Business Bricks. Your application (Ref: BB-APP-1002) has been received and is currently under administrative review.\\n\\nOur team will review your business details and notify you once your account has been approved.\\n\\nBest regards,\\nThe Business Bricks Team\",\"templateType\":\"CONFIRMATION\",\"sentAt\":\"2026-11-17T04:26:39.451Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:26:39.452Z"
-      },
-      {
-        "id": "f65dfcde-772f-44cd-904e-f4e839173456",
-        "actor": "SYSTEM_EMAIL",
-        "action": "EMAIL_SENT_ADMIN_ALERT",
-        "targetId": "5ce4264d-56ec-4c8e-b614-1f2ac8fa0b4e",
-        "details": "{\"to\":\"b2b@businessbricks.com, logan@businessbricks.com\",\"from\":\"Business Bricks <b2b@businessbricks.com>\",\"subject\":\"[New Wholesale Application] Acme crop (BB-APP-1002)\",\"body\":\"A new wholesale customer application has been submitted and is awaiting your review:\\n\\nReference: BB-APP-1002\\nApplicant: Faizi Ace\\nCompany: Acme crop\\nEmail: ecombuilderfaizi@gmail.com\\nPhone: +1 (555) 019-2834\\nBusiness Type: Retailer / Store\\nLocation: Washington, DC United States\\nWebsite: N/A\\nTax ID: N/A\\n\\nReview and approve this application in the B2B Customer Approval Portal:\\nhttps://business-bricks-customer-approval.onrender.com/#applications\",\"templateType\":\"ADMIN_ALERT\",\"sentAt\":\"2026-11-17T04:26:39.455Z\",\"delivered\":true,\"mode\":\"LOGGED_LOCAL\"}",
-        "timestamp": "2026-11-17T04:26:39.456Z"
       }
     ],
-    "appSettings": []
+    "appSettings": [
+      {
+        "id": "e04d9dc8-ebab-4645-9379-2abfc4fb78c4",
+        "key": "b2b_tag_name",
+        "value": "b2b-approved",
+        "updatedAt": "2026-11-17T05:07:08.270Z"
+      },
+      {
+        "id": "74900778-ad7c-49cd-a702-3ec92db94d27",
+        "key": "require_verified_email",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:10.150Z"
+      },
+      {
+        "id": "8e90eb79-8c31-48ad-8398-1e2b8df6b86b",
+        "key": "order_hold_enabled",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:11.350Z"
+      },
+      {
+        "id": "21a79be0-d75f-49ab-b2a5-4e4537d03ee9",
+        "key": "auto_tag_customer",
+        "value": "true",
+        "updatedAt": "2026-11-17T05:07:12.472Z"
+      }
+    ]
   }
 }

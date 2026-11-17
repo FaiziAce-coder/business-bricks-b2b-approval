@@ -296,14 +296,35 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
     }
   }
 
-  const effectiveCustomerId = shopifyCustomerId || application.shopifyCustomerId;
+  let effectiveCustomerId = shopifyCustomerId || application.shopifyCustomerId;
+
+  if (!effectiveCustomerId) {
+    try {
+      const existing = await shopifyService.findCustomerByEmail(application.email);
+      if (existing) {
+        effectiveCustomerId = existing.id;
+      } else {
+        const created = await shopifyService.createCustomer({
+          firstName: application.firstName,
+          lastName: application.lastName,
+          email: application.email,
+          company: application.company,
+          phone: application.phone,
+          tags: ['b2b-approved']
+        });
+        if (created) effectiveCustomerId = created.id;
+      }
+    } catch (err) {
+      console.warn('Warning checking/creating customer in Shopify:', err.message);
+    }
+  }
 
   // 1. Update application in database
   const updated = await prisma.application.update({
     where: { id },
     data: {
       status: 'APPROVED',
-      shopifyCustomerId: effectiveCustomerId,
+      shopifyCustomerId: effectiveCustomerId || null,
       adminNotes: notes !== undefined ? notes : application.adminNotes
     }
   });
@@ -370,9 +391,9 @@ async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
   // Remove B2B approval tag if customer was previously tagged
   if (application.shopifyCustomerId) {
     try {
-      await shopifyService.revokeB2BApproval(application.shopifyCustomerId);
+      await shopifyService.rejectB2BApplication(application.shopifyCustomerId);
     } catch (err) {
-      console.warn('Warning: Could not revoke tag in Shopify:', err.message);
+      console.warn('Warning: Could not reject tag in Shopify:', err.message);
     }
   }
 
@@ -428,6 +449,50 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
     data: {
       actor: adminUser,
       action: 'ACCESS_REVOKED',
+      targetId: id,
+      details: JSON.stringify({ email: application.email, reason })
+    }
+  });
+
+  return updated;
+}
+
+/**
+ * Keep/Reset application to Pending status
+ */
+async function keepPendingApplication(id, { adminUser = 'Administrator', reason }) {
+  const application = await getApplicationById(id);
+
+  const updated = await prisma.application.update({
+    where: { id },
+    data: {
+      status: 'PENDING',
+      adminNotes: reason || application.adminNotes
+    }
+  });
+
+  await prisma.statusHistory.create({
+    data: {
+      applicationId: id,
+      previousStatus: application.status,
+      newStatus: 'PENDING',
+      changedBy: adminUser,
+      reason: reason || 'Application kept / reset to Pending'
+    }
+  });
+
+  if (application.shopifyCustomerId) {
+    try {
+      await shopifyService.markB2BPending(application.shopifyCustomerId);
+    } catch (err) {
+      console.warn('Warning: Could not sync b2b-pending tag in Shopify:', err.message);
+    }
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      actor: adminUser,
+      action: 'APPLICATION_PENDING',
       targetId: id,
       details: JSON.stringify({ email: application.email, reason })
     }
@@ -503,6 +568,7 @@ module.exports = {
   approveApplication,
   rejectApplication,
   revokeAccess,
+  keepPendingApplication,
   updateDiscountConfig,
   getDashboardStats
 };

@@ -9,6 +9,16 @@ const { verifyCustomerOwnership } = require('./services/verificationService');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Content-Security-Policy to allow embedded execution inside Shopify Admin iframe
+app.use((req, res, next) => {
+  const shop = req.query.shop || 'business-bricks.myshopify.com';
+  res.setHeader(
+    'Content-Security-Policy',
+    `frame-ancestors https://${shop} https://admin.shopify.com https://*.myshopify.com https://*.spin.dev;`
+  );
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -17,6 +27,58 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Health Check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Business Bricks Customer Approval App', timestamp: new Date().toISOString() });
+});
+
+// ==========================================
+// 0. SHOPIFY OAUTH & EMBEDDED APP ROUTES
+// ==========================================
+
+app.get('/auth', (req, res) => {
+  const shop = req.query.shop || 'business-bricks.myshopify.com';
+  const clientId = process.env.SHOPIFY_CLIENT_ID || 'b511593a1fd3ef26d3c5412bdd504458';
+  const scopes = 'read_customers,write_customers,read_orders,write_orders';
+  const redirectUri = `${process.env.APP_URL || 'https://business-bricks-customer-approval.onrender.com'}/auth/callback`;
+  const state = Date.now().toString();
+  const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+  res.redirect(authUrl);
+});
+
+app.get('/auth/callback', async (req, res) => {
+  const { shop, code, host } = req.query;
+  if (!code || !shop) {
+    return res.redirect(`/?shop=${shop || 'business-bricks.myshopify.com'}`);
+  }
+
+  try {
+    const clientId = process.env.SHOPIFY_CLIENT_ID;
+    const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+
+    const tokenRes = await fetch(`https://${shop}/admin/oauth/access_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code
+      })
+    });
+
+    const tokenData = await tokenRes.json();
+    if (tokenData.access_token) {
+      process.env.SHOPIFY_ADMIN_ACCESS_TOKEN = tokenData.access_token;
+      const prisma = require('./db');
+      await prisma.appSetting.upsert({
+        where: { key: 'shopify_access_token' },
+        update: { value: tokenData.access_token },
+        create: { key: 'shopify_access_token', value: tokenData.access_token }
+      });
+    }
+  } catch (err) {
+    console.error('OAuth exchange error:', err);
+  }
+
+  const targetHost = host ? `&host=${host}` : '';
+  res.redirect(`/?shop=${shop}${targetHost}`);
 });
 
 // ==========================================
@@ -210,6 +272,23 @@ app.post('/api/admin/applications/:id/revoke', async (req, res) => {
     res.json({
       success: true,
       message: 'Wholesale access revoked',
+      application
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Keep Application Pending
+ */
+app.post('/api/admin/applications/:id/pending', async (req, res) => {
+  try {
+    const { adminUser, reason } = req.body;
+    const application = await applicationService.keepPendingApplication(req.params.id, { adminUser, reason });
+    res.json({
+      success: true,
+      message: 'Application status set to Pending',
       application
     });
   } catch (err) {

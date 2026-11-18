@@ -24,9 +24,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Health Check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'Business Bricks Customer Approval App', timestamp: new Date().toISOString() });
+// Lightweight Health & Keepalive Check (Zero DB queries to allow Neon compute to sleep)
+app.get(['/health', '/ping'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.status(200).json({
+    status: 'ok',
+    service: 'Business Bricks Customer Approval App',
+    databaseQueried: false,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // ==========================================

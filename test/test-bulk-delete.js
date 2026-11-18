@@ -89,7 +89,7 @@ async function runBulkDeleteTests() {
 
     // Step 2: Test Single Delete
     console.log('\n2. Testing Single Delete by ID...');
-    const delResult = await applicationService.deleteApplication(app1.id, { adminUser: 'Logan Christensen' });
+    const delResult = await applicationService.deleteApplication(app1.id, { adminUser: 'Administrator' });
     test(delResult.success === true, 'deleteApplication returned success: true');
     test(delResult.deletedId === app1.id, 'deleteApplication returned correct deletedId');
 
@@ -106,7 +106,7 @@ async function runBulkDeleteTests() {
 
     // Step 3: Test Bulk Delete
     console.log('\n3. Testing Bulk Delete of Application 2 and Application 3...');
-    const bulkResult = await applicationService.bulkDeleteApplications([app2.id, app3.referenceNumber], { adminUser: 'Logan Christensen' });
+    const bulkResult = await applicationService.bulkDeleteApplications([app2.id, app3.referenceNumber], { adminUser: 'Administrator' });
     test(bulkResult.count === 2, `bulkDeleteApplications deleted count is 2 (got ${bulkResult.count})`);
     test(bulkResult.deleted.length === 2, 'bulkDeleteApplications returned 2 deleted records');
 

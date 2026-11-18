@@ -576,16 +576,34 @@
         <!-- Status History Timeline -->
         <div class="timeline">
           <h4>Status History & Audit Trail</h4>
-          ${(app.history && app.history.length > 0) ? app.history.map(h => `
-            <div class="timeline-item">
-              <span class="timeline-date">${formatDate(h.createdAt, true)}</span>
-              <span class="timeline-desc">
-                Status changed from <strong>${h.fromStatus}</strong> to <strong>${h.toStatus}</strong>
-                ${h.changedBy ? `by <em>${escapeHtml(h.changedBy)}</em>` : ''}
-                ${h.notes ? `— <span>"${escapeHtml(h.notes)}"</span>` : ''}
-              </span>
-            </div>
-          `).join('') : '<p class="text-sm text-muted">No status transitions recorded.</p>'}
+          ${(app.history && app.history.length > 0) ? app.history.map(h => {
+            const dateStr = formatDate(h.timestamp || h.createdAt, true);
+            const formatStatusName = s => {
+              if (!s) return 'Pending Review';
+              if (s === 'PENDING') return 'Pending Review';
+              if (s === 'APPROVED') return 'Approved';
+              if (s === 'REJECTED') return 'Rejected';
+              if (s === 'REVOKED') return 'Revoked';
+              return s;
+            };
+            const from = formatStatusName(h.previousStatus || h.fromStatus);
+            const to = formatStatusName(h.newStatus || h.toStatus);
+            const note = h.reason || h.notes || '';
+            let actor = h.changedBy || '';
+            if (actor.toLowerCase().includes('logan') || actor.toLowerCase().includes('christensen')) {
+              actor = 'Administrator';
+            }
+            return `
+              <div class="timeline-item">
+                <span class="timeline-date">${dateStr}</span>
+                <span class="timeline-desc">
+                  Status changed from <strong>${escapeHtml(from)}</strong> to <strong>${escapeHtml(to)}</strong>
+                  ${actor ? `by <em>${escapeHtml(actor)}</em>` : ''}
+                  ${note ? `— <span>"${escapeHtml(note)}"</span>` : ''}
+                </span>
+              </div>
+            `;
+          }).join('') : '<p class="text-sm text-muted">No status transitions recorded.</p>'}
         </div>
       `;
 
@@ -687,25 +705,25 @@
       if (type === 'APPROVE') {
         res = await api(`/api/admin/applications/${id}/approve`, {
           method: 'POST',
-          body: JSON.stringify({ adminUser: 'Logan Christensen', notes })
+          body: JSON.stringify({ adminUser: 'Administrator', notes })
         });
         showToast('Application approved successfully!', 'success');
       } else if (type === 'REJECT') {
         res = await api(`/api/admin/applications/${id}/reject`, {
           method: 'POST',
-          body: JSON.stringify({ adminUser: 'Logan Christensen', reason: notes })
+          body: JSON.stringify({ adminUser: 'Administrator', reason: notes })
         });
         showToast('Application rejected', 'info');
       } else if (type === 'REVOKE') {
         res = await api(`/api/admin/applications/${id}/revoke`, {
           method: 'POST',
-          body: JSON.stringify({ adminUser: 'Logan Christensen', reason: notes })
+          body: JSON.stringify({ adminUser: 'Administrator', reason: notes })
         });
         showToast('Wholesale access revoked', 'info');
       } else if (type === 'PENDING') {
         res = await api(`/api/admin/applications/${id}/pending`, {
           method: 'POST',
-          body: JSON.stringify({ adminUser: 'Logan Christensen', notes })
+          body: JSON.stringify({ adminUser: 'Administrator', notes })
         });
         showToast('Application set to pending', 'info');
       }

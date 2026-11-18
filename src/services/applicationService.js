@@ -68,8 +68,21 @@ async function submitApplication(data) {
 
   // 3. Generate verification token & reference number
   const verificationToken = generateEmailVerificationToken(cleanEmail);
-  const totalAppsCount = await prisma.application.count();
-  const nextRefNumber = `BB-APP-${1001 + totalAppsCount}`;
+  const highestApp = await prisma.application.findFirst({
+    orderBy: { createdAt: 'desc' },
+    select: { referenceNumber: true }
+  });
+  let nextSeq = 1001;
+  if (highestApp && highestApp.referenceNumber) {
+    const match = highestApp.referenceNumber.match(/BB-APP-(\d+)/);
+    if (match) {
+      nextSeq = Math.max(nextSeq, parseInt(match[1], 10) + 1);
+    }
+  }
+  while (await prisma.application.findUnique({ where: { referenceNumber: `BB-APP-${nextSeq}` } })) {
+    nextSeq++;
+  }
+  const nextRefNumber = `BB-APP-${nextSeq}`;
 
   // 4. Create or update application record
   let application;
@@ -275,11 +288,23 @@ async function getApplicationById(id) {
 }
 
 /**
+ * Sanitize admin actor name to ensure personal names are never recorded
+ */
+function sanitizeAdminUser(user) {
+  if (!user || typeof user !== 'string') return 'Administrator';
+  if (user.toLowerCase().includes('logan') || user.toLowerCase().includes('christensen')) {
+    return 'Administrator';
+  }
+  return user.trim() || 'Administrator';
+}
+
+/**
  * Approve application
  * Safely resolves or creates customer in Shopify, links authenticated Shopify customer ID,
  * synchronizes B2B approval tags, and accurately records email/identity verification.
  */
 async function approveApplication(id, { adminUser = 'Administrator', notes, shopifyCustomerId }) {
+  const actor = sanitizeAdminUser(adminUser);
   const application = await getApplicationById(id);
 
   if (application.status === 'APPROVED') {
@@ -355,7 +380,7 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
       applicationId: id,
       previousStatus: application.status,
       newStatus: 'APPROVED',
-      changedBy: adminUser,
+      changedBy: actor,
       reason: notes || 'Application approved by administrator'
     }
   });
@@ -372,7 +397,7 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
   // 7. Audit log
   await prisma.auditLog.create({
     data: {
-      actor: adminUser,
+      actor: actor,
       action: 'APPLICATION_APPROVED',
       targetId: id,
       details: JSON.stringify({
@@ -393,6 +418,7 @@ async function approveApplication(id, { adminUser = 'Administrator', notes, shop
  * Reject application
  */
 async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
+  const actor = sanitizeAdminUser(adminUser);
   const application = await getApplicationById(id);
 
   const updated = await prisma.application.update({
@@ -408,7 +434,7 @@ async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
       applicationId: id,
       previousStatus: application.status,
       newStatus: 'REJECTED',
-      changedBy: adminUser,
+      changedBy: actor,
       reason: reason || 'Application rejected by administrator'
     }
   });
@@ -424,7 +450,7 @@ async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
 
   await prisma.auditLog.create({
     data: {
-      actor: adminUser,
+      actor: actor,
       action: 'APPLICATION_REJECTED',
       targetId: id,
       details: JSON.stringify({ email: application.email, reason })
@@ -440,6 +466,7 @@ async function rejectApplication(id, { adminUser = 'Administrator', reason }) {
  * Revoke approved customer access
  */
 async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
+  const actor = sanitizeAdminUser(adminUser);
   const application = await getApplicationById(id);
 
   const updated = await prisma.application.update({
@@ -455,7 +482,7 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
       applicationId: id,
       previousStatus: application.status,
       newStatus: 'REVOKED',
-      changedBy: adminUser,
+      changedBy: actor,
       reason: reason || 'Access revoked by administrator'
     }
   });
@@ -472,7 +499,7 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
 
   await prisma.auditLog.create({
     data: {
-      actor: adminUser,
+      actor: actor,
       action: 'ACCESS_REVOKED',
       targetId: id,
       details: JSON.stringify({ email: application.email, reason })
@@ -486,6 +513,7 @@ async function revokeAccess(id, { adminUser = 'Administrator', reason }) {
  * Keep/Reset application to Pending status
  */
 async function keepPendingApplication(id, { adminUser = 'Administrator', reason }) {
+  const actor = sanitizeAdminUser(adminUser);
   const application = await getApplicationById(id);
 
   const updated = await prisma.application.update({
@@ -501,7 +529,7 @@ async function keepPendingApplication(id, { adminUser = 'Administrator', reason 
       applicationId: id,
       previousStatus: application.status,
       newStatus: 'PENDING',
-      changedBy: adminUser,
+      changedBy: actor,
       reason: reason || 'Application kept / reset to Pending'
     }
   });
@@ -516,7 +544,7 @@ async function keepPendingApplication(id, { adminUser = 'Administrator', reason 
 
   await prisma.auditLog.create({
     data: {
-      actor: adminUser,
+      actor: actor,
       action: 'APPLICATION_PENDING',
       targetId: id,
       details: JSON.stringify({ email: application.email, reason })
@@ -604,6 +632,7 @@ async function getDashboardStats() {
  * Permanently delete a single application by id or referenceNumber
  */
 async function deleteApplication(id, { adminUser = 'Administrator' } = {}) {
+  const actor = sanitizeAdminUser(adminUser);
   const app = await prisma.application.findFirst({
     where: {
       OR: [
@@ -627,7 +656,7 @@ async function deleteApplication(id, { adminUser = 'Administrator' } = {}) {
   try {
     await prisma.auditLog.create({
       data: {
-        actor: adminUser,
+        actor: actor,
         action: 'APPLICATION_DELETED',
         targetId: app.id,
         details: JSON.stringify({
@@ -653,6 +682,7 @@ async function deleteApplication(id, { adminUser = 'Administrator' } = {}) {
  * Bulk delete multiple applications by ID or referenceNumber
  */
 async function bulkDeleteApplications(ids, { adminUser = 'Administrator' } = {}) {
+  const actor = sanitizeAdminUser(adminUser);
   if (!Array.isArray(ids) || ids.length === 0) {
     return { count: 0, deleted: [] };
   }
@@ -690,7 +720,7 @@ async function bulkDeleteApplications(ids, { adminUser = 'Administrator' } = {})
   try {
     await prisma.auditLog.create({
       data: {
-        actor: adminUser,
+        actor: actor,
         action: 'APPLICATIONS_BULK_DELETED',
         targetId: appIds.slice(0, 10).join(','),
         details: JSON.stringify({

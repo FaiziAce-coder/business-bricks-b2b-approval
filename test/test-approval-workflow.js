@@ -75,7 +75,7 @@ async function runApprovalLifecycleTests() {
     // ---------------------------------------------------------
     console.log('\n3. Admin Approves Application (Granting B2B Access)...');
     const approvedApp = await applicationService.approveApplication(app.id, {
-      adminUser: 'Logan Christensen',
+      adminUser: 'Administrator',
       notes: 'Verified EIN with state business registry. Approved.'
     });
 
@@ -87,7 +87,7 @@ async function runApprovalLifecycleTests() {
       orderBy: { timestamp: 'desc' }
     });
     test(historyAfterApproval[0].previousStatus === 'PENDING' && historyAfterApproval[0].newStatus === 'APPROVED', 'Status transition PENDING -> APPROVED recorded in history');
-    test(historyAfterApproval[0].changedBy === 'Logan Christensen', 'Status changedBy actor recorded as Logan Christensen');
+    test(historyAfterApproval[0].changedBy === 'Administrator', 'Status changedBy actor recorded as Administrator (person name sanitized)');
 
     // ---------------------------------------------------------
     // STEP 4: Storefront Access Status Check
@@ -101,7 +101,7 @@ async function runApprovalLifecycleTests() {
     // ---------------------------------------------------------
     console.log('\n5. Admin Revokes B2B Wholesale Access...');
     const revokedApp = await applicationService.revokeAccess(app.id, {
-      adminUser: 'Logan Christensen',
+      adminUser: 'Administrator',
       reason: 'Account audit - resale certificate expired'
     });
 
@@ -118,7 +118,7 @@ async function runApprovalLifecycleTests() {
     // ---------------------------------------------------------
     console.log('\n6. Admin Re-Approves Revoked Customer...');
     const reApprovedApp = await applicationService.approveApplication(app.id, {
-      adminUser: 'Logan Christensen',
+      adminUser: 'Administrator',
       notes: 'Updated certificate received and verified.'
     });
 
@@ -143,7 +143,7 @@ async function runApprovalLifecycleTests() {
     });
 
     const rejectedApp = await applicationService.rejectApplication(rejSubmission.application.id, {
-      adminUser: 'Logan Christensen',
+      adminUser: 'Administrator',
       reason: 'Personal hobbyist, not a registered commercial entity'
     });
 

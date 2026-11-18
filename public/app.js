@@ -241,10 +241,11 @@
 
     el.recentAppsTbody.innerHTML = apps.map(app => {
       const isChecked = state.selectedRecentAppIds.has(app.id);
+      const isApproved = app.status === 'APPROVED';
       return `
         <tr>
           <td style="text-align: center;">
-            <input type="checkbox" class="table-checkbox recent-app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} />
+            <input type="checkbox" class="table-checkbox recent-app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} ${isApproved ? 'disabled title="Approved customers cannot be deleted. Revoke access first."' : ''} />
           </td>
           <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
           <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
@@ -262,12 +263,14 @@
   }
 
   function updateRecentAppsBulkUI() {
-    const total = state.recentApplications ? state.recentApplications.length : 0;
+    const deletable = (state.recentApplications || []).filter(a => a.status !== 'APPROVED');
+    const total = deletable.length;
     const selectedCount = state.selectedRecentAppIds.size;
 
     if (el.selectAllRecentApps) {
       el.selectAllRecentApps.checked = total > 0 && selectedCount === total;
       el.selectAllRecentApps.indeterminate = selectedCount > 0 && selectedCount < total;
+      el.selectAllRecentApps.disabled = total === 0;
     }
 
     if (el.recentAppsBulkBar) {
@@ -322,10 +325,11 @@
 
     el.applicationsTbody.innerHTML = apps.map(app => {
       const isChecked = state.selectedAppIds.has(app.id);
+      const isApproved = app.status === 'APPROVED';
       return `
         <tr>
           <td style="text-align: center;">
-            <input type="checkbox" class="table-checkbox app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} />
+            <input type="checkbox" class="table-checkbox app-select" data-id="${app.id}" ${isChecked ? 'checked' : ''} ${isApproved ? 'disabled title="Approved customers cannot be deleted. Revoke access first."' : ''} />
           </td>
           <td><span class="ref-badge">${escapeHtml(app.referenceNumber || 'BB-APP')}</span></td>
           <td><strong>${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}</strong></td>
@@ -345,12 +349,14 @@
   }
 
   function updateAppsBulkUI() {
-    const total = state.applications ? state.applications.length : 0;
+    const deletable = (state.applications || []).filter(a => a.status !== 'APPROVED');
+    const total = deletable.length;
     const selectedCount = state.selectedAppIds.size;
 
     if (el.selectAllApps) {
       el.selectAllApps.checked = total > 0 && selectedCount === total;
       el.selectAllApps.indeterminate = selectedCount > 0 && selectedCount < total;
+      el.selectAllApps.disabled = total === 0;
     }
 
     if (el.appsBulkBar) {
@@ -817,6 +823,12 @@
       return;
     }
 
+    const approvedSelected = selectedApps.filter(a => a.status === 'APPROVED');
+    if (approvedSelected.length > 0) {
+      showToast('Approved customers cannot be deleted. Please revoke wholesale access first.', 'error');
+      return;
+    }
+
     state.pendingBulkDelete = { source, apps: selectedApps };
 
     if (el.bulkDeleteCount) {
@@ -1022,7 +1034,9 @@
         const checked = e.target.checked;
         if (!state.recentApplications) return;
         if (checked) {
-          state.recentApplications.forEach(a => state.selectedRecentAppIds.add(a.id));
+          state.recentApplications
+            .filter(a => a.status !== 'APPROVED')
+            .forEach(a => state.selectedRecentAppIds.add(a.id));
         } else {
           state.selectedRecentAppIds.clear();
         }
@@ -1056,7 +1070,9 @@
         const checked = e.target.checked;
         if (!state.applications) return;
         if (checked) {
-          state.applications.forEach(a => state.selectedAppIds.add(a.id));
+          state.applications
+            .filter(a => a.status !== 'APPROVED')
+            .forEach(a => state.selectedAppIds.add(a.id));
         } else {
           state.selectedAppIds.clear();
         }

@@ -343,7 +343,7 @@ app.post('/api/admin/applications/bulk-delete', async (req, res) => {
     res.json({ success: true, count: result.count, deleted: result.deleted });
   } catch (error) {
     logger.error('Bulk delete applications failed:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(error.status || 500).json({ success: false, error: error.message });
   }
 });
 

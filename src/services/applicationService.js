@@ -648,6 +648,13 @@ async function deleteApplication(id, { adminUser = 'Administrator' } = {}) {
     throw error;
   }
 
+  // Prevent deleting approved customers: wholesale access must be revoked first
+  if (app.status === 'APPROVED') {
+    const error = new Error('Approved customers cannot be deleted. Please revoke wholesale access first.');
+    error.status = 400;
+    throw error;
+  }
+
   // Delete application record (StatusHistory cascades automatically per Prisma schema)
   await prisma.application.delete({
     where: { id: app.id }
@@ -706,6 +713,15 @@ async function bulkDeleteApplications(ids, { adminUser = 'Administrator' } = {})
 
   if (apps.length === 0) {
     return { count: 0, deleted: [] };
+  }
+
+  // Prevent deleting approved customers in bulk
+  const approvedApps = apps.filter(a => a.status === 'APPROVED');
+  if (approvedApps.length > 0) {
+    const refs = approvedApps.map(a => a.referenceNumber).join(', ');
+    const error = new Error(`Approved customers cannot be deleted (${refs}). Please revoke wholesale access first.`);
+    error.status = 400;
+    throw error;
   }
 
   const appIds = apps.map(a => a.id);

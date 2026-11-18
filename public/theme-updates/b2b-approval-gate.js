@@ -85,7 +85,7 @@
           <div class="b2b-access-badge" style="background:rgba(220,53,69,0.18);color:#FF8080;">🔒 Access Restricted</div>
           <h3>Wholesale Access Inactive</h3>
           <p>Your wholesale account is not currently active for direct ordering. You may submit an application for wholesale reconsideration below.</p>
-          <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+          <a href="/pages/wholesale-signup" class="b2b-access-btn open-wholesale-modal-btn">Apply for Wholesale Access</a>
           <a href="/pages/contact" class="b2b-access-sublink">Questions regarding your account? Contact us →</a>
         </div>
       `;
@@ -96,7 +96,7 @@
           <div class="b2b-access-badge">🔒 Wholesale Exclusive</div>
           <h3>Wholesale Purchasing Access Required</h3>
           <p>Our semi-custom sets are available exclusively to verified B2B partners. Apply today to unlock direct ordering.</p>
-          <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+          <a href="/pages/wholesale-signup" class="b2b-access-btn open-wholesale-modal-btn">Apply for Wholesale Access</a>
           <a href="/pages/contact" class="b2b-access-sublink">Questions or custom requests? Contact us →</a>
         </div>
       `;
@@ -107,7 +107,7 @@
           <div class="b2b-access-badge">🔒 Wholesale Exclusive</div>
           <h3>Wholesale Purchasing Access Required</h3>
           <p>Our semi-custom sets are available exclusively to verified B2B partners. Apply today to unlock direct ordering.</p>
-          <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+          <a href="/pages/wholesale-signup" class="b2b-access-btn open-wholesale-modal-btn">Apply for Wholesale Access</a>
           <a href="/account/login?return_to=${encodeURIComponent(window.location.pathname)}" class="b2b-access-sublink">Already have an approved account? Sign In →</a>
         </div>
       `;

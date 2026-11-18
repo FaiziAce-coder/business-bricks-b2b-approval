@@ -161,7 +161,31 @@ async function submitApplication(data) {
     }
   });
 
+  // 6. Sync b2b-pending tag in Shopify if customer ID is known or found by email
+  let targetCustomerId = shopifyCustomerId || application.shopifyCustomerId;
+  if (!targetCustomerId) {
+    try {
+      const existingCustomer = await shopifyService.findCustomerByEmail(cleanEmail);
+      if (existingCustomer && existingCustomer.id) {
+        targetCustomerId = existingCustomer.id;
+        await prisma.application.update({
+          where: { id: application.id },
+          data: { shopifyCustomerId: existingCustomer.id }
+        });
+        application.shopifyCustomerId = existingCustomer.id;
+      }
+    } catch (lookupErr) {
+      console.warn('Warning: Could not look up customer by email on submission:', lookupErr.message);
+    }
+  }
 
+  if (targetCustomerId) {
+    try {
+      await shopifyService.markB2BPending(targetCustomerId);
+    } catch (tagErr) {
+      console.warn('Warning: Could not tag customer with b2b-pending on submission:', tagErr.message);
+    }
+  }
 
   return {
     application,

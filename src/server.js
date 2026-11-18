@@ -149,35 +149,78 @@ app.get('/api/applications/verify-email', async (req, res) => {
 
 /**
  * Storefront status check endpoint
- * Checks if current customer is approved for semi-custom purchases
+ * Checks wholesale application status using authenticated Shopify Customer ID or email.
+ * Accurately distinguishes NOT_APPLIED, PENDING, APPROVED, REJECTED, and REVOKED states.
  */
 app.get('/api/storefront/status', async (req, res) => {
   const { email, customerId } = req.query;
-  if (!email) {
-    return res.json({ approved: false, status: 'GUEST', message: 'No customer account signed in' });
+  if (!email && !customerId) {
+    return res.json({ approved: false, applied: false, status: 'GUEST', message: 'No customer account signed in' });
   }
 
   try {
-    const cleanEmail = email.trim().toLowerCase();
     const prisma = require('./db');
-    const application = await prisma.application.findUnique({
-      where: { email: cleanEmail }
-    });
+    let application = null;
+    const rawId = customerId ? String(customerId).trim() : null;
+    const numericId = rawId ? rawId.replace(/\D/g, '') : null;
+    const gid = numericId ? `gid://shopify/Customer/${numericId}` : null;
+    const cleanEmail = email && typeof email === 'string' && email.trim() ? email.trim().toLowerCase() : null;
 
-    if (!application) {
-      return res.json({ approved: false, status: 'NOT_FOUND', message: 'No wholesale application on file' });
+    // 1. Primary lookup by authenticated Shopify Customer ID
+    if (numericId) {
+      application = await prisma.application.findFirst({
+        where: {
+          OR: [
+            { shopifyCustomerId: rawId },
+            { shopifyCustomerId: numericId },
+            { shopifyCustomerId: gid }
+          ]
+        }
+      });
     }
 
-    // Verify customer ownership if customerId was provided
-    if (customerId && application.shopifyCustomerId) {
+    // 2. Secondary fallback lookup by email if not found by customer ID
+    if (!application && cleanEmail) {
+      application = await prisma.application.findUnique({
+        where: { email: cleanEmail }
+      });
+
+      // If matched by email and customerId was provided, auto-link customerId
+      if (application && gid && !application.shopifyCustomerId) {
+        try {
+          await prisma.application.update({
+            where: { id: application.id },
+            data: { shopifyCustomerId: gid, emailVerified: true }
+          });
+          application.shopifyCustomerId = gid;
+          application.emailVerified = true;
+        } catch (linkErr) {
+          console.warn('Could not auto-link customer ID on status query:', linkErr.message);
+        }
+      }
+    }
+
+    // If no wholesale application exists on file
+    if (!application) {
+      return res.json({
+        approved: false,
+        applied: false,
+        status: 'NOT_APPLIED',
+        message: 'No wholesale application on file'
+      });
+    }
+
+    // Optional ownership verification if both customerId and email are present and application is linked
+    if (numericId && application.shopifyCustomerId && cleanEmail) {
       const ownership = verifyCustomerOwnership({
         application,
-        authenticatedCustomer: { id: customerId, email: cleanEmail, verified_email: application.emailVerified }
+        authenticatedCustomer: { id: numericId, email: cleanEmail, verified_email: application.emailVerified }
       });
 
       if (!ownership.isVerified) {
         return res.json({
           approved: false,
+          applied: true,
           status: 'UNVERIFIED',
           message: 'Customer session does not match verified application records'
         });
@@ -185,14 +228,23 @@ app.get('/api/storefront/status', async (req, res) => {
     }
 
     const isApproved = application.status === 'APPROVED';
-    res.json({
+    return res.json({
       approved: isApproved,
+      applied: true,
       status: application.status,
+      referenceNumber: application.referenceNumber,
+      company: application.company,
       emailVerified: application.emailVerified,
-      company: application.company
+      discountType: application.discountType,
+      discountValue: application.discountValue,
+      message: isApproved ? 'Approved for Wholesale Access' :
+               application.status === 'PENDING' ? 'Wholesale Application Under Review' :
+               application.status === 'REJECTED' ? 'Wholesale Application Rejected' :
+               'Wholesale Purchasing Access Revoked'
     });
   } catch (err) {
-    res.status(500).json({ approved: false, error: err.message });
+    console.error('Storefront status query failed:', err);
+    res.status(500).json({ approved: false, applied: false, error: err.message });
   }
 });
 

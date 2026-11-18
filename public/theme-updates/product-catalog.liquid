@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+      {{ product.title }}
+      —
+      {{ shop.name }}
+    </title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    >
+    <style>
+      :root {
+        --purple:     #8B2FE0;
+        --purple-g:   linear-gradient(135deg,#9B3FEF,#7B28CC);
+        --black:      #08080D;
+        --card-bg:    #111120;
+        --border:     rgba(255,255,255,0.08);
+        --text:       #FFFFFF;
+        --muted:      rgba(255,255,255,0.50);
+        --subtle:     rgba(255,255,255,0.25);
+      }
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{scroll-behavior:smooth}
+      body{
+        font-family:'Inter',sans-serif;
+        background:var(--black);
+        color:var(--text);
+        overflow-x:hidden;
+      }
+      body::before{
+        content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+        background:
+          radial-gradient(ellipse 60% 50% at 8% 5%,rgba(139,47,224,.15) 0%,transparent 58%),
+          radial-gradient(ellipse 50% 45% at 92% 92%,rgba(75,16,128,.17) 0%,transparent 58%);
+      }
+      .page{position:relative;z-index:1}
+
+            header{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:0 60px;height:68px;
+        background:rgba(8,8,13,.85);
+        border-bottom:1px solid var(--border);
+        backdrop-filter:blur(18px);
+        position:sticky;top:0;z-index:300;
+      }
+      .logo{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+      .logo svg{width:24px;height:30px}
+      .logo-name b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.2px}
+      .logo-name b:first-child{color:#fff}
+      .logo-name b:last-child{color:var(--purple)}
+      nav{display:flex;align-items:center;gap:22px}
+      nav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .18s}
+      nav a:hover,nav a.active{color:#fff}
+      .btn-quote{
+        background:var(--purple-g);
+        color:#fff;font-size:13px;font-weight:700;
+        padding:9px 20px;border-radius:99px;text-decoration:none;
+        white-space:nowrap;box-shadow:0 4px 16px rgba(139,47,224,.38);
+        transition:opacity .2s;
+      }
+      .btn-quote:hover{opacity:.88}
+
+            .product-detail{
+        max-width:1100px;margin:0 auto;padding:64px 40px;
+        display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;
+      }
+      .product-images{
+        background:var(--card-bg);border:1px solid rgba(139,47,224,.20);
+        border-radius:20px;overflow:hidden;
+        display:flex;align-items:center;justify-content:center;padding:32px;
+      }
+      .product-images img{
+        width:100%;max-height:500px;object-fit:contain;
+        filter:drop-shadow(0 12px 32px rgba(139,47,224,.30));
+      }
+      .product-info{display:flex;flex-direction:column;gap:24px}
+      .product-info h1{font-size:36px;font-weight:900;line-height:1.15}
+      .product-price{font-size:28px;font-weight:800;color:#C089F8}
+      .product-description{color:var(--muted);font-size:14px;line-height:1.7}
+      .variant-selector{display:flex;flex-direction:column;gap:10px}
+      .variant-selector label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+      .variant-selector select{
+        width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+        border-radius:10px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;padding:12px 16px;
+        outline:none;-webkit-appearance:none;appearance:none;
+        background-image:url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23C089F8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;
+      }
+      .variant-selector select:focus{border-color:rgba(139,47,224,.55)}
+      .variant-selector select option{background:#111118}
+      .quantity-selector{display:flex;align-items:center;gap:12px}
+      .quantity-selector input{
+        width:80px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+        border-radius:10px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;text-align:center;padding:12px;outline:none;
+      }
+      .quantity-selector input:focus{border-color:rgba(139,47,224,.55)}
+      .add-to-cart{
+        background:var(--purple-g);color:#fff;font-family:'Inter',sans-serif;
+        font-size:15px;font-weight:700;padding:16px 28px;border:none;border-radius:12px;cursor:pointer;
+        box-shadow:0 4px 18px rgba(139,47,224,.38);transition:opacity .2s,transform .15s;
+        width:100%;margin-top:30px;
+      }
+      .add-to-cart:hover{opacity:.9;transform:translateY(-1px)}
+      .add-to-cart:disabled{opacity:.4;pointer-events:none}
+      .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:8px;transition:color .2s}
+      .back-link:hover{color:#C089F8}
+      .product-meta-box {
+  margin: 28px 0 24px;
+  display: grid;
+  gap: 14px;
+}
+.product-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 16px;
+  background: rgba(168, 85, 247, 0.06);
+}
+
+.product-meta-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.product-meta-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.quantity-selector input {
+  width: 110px;
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .product-meta-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .quantity-selector input {
+    width: 100%;
+  }
+
+  .add-to-cart {
+    width: 100%;
+  }
+}
+            footer{
+        background:rgba(139,47,224,.18);border-top:1px solid rgba(139,47,224,.28);
+        padding:40px 60px;display:grid;grid-template-columns:auto 1fr auto;gap:40px;align-items:center;
+      }
+      .foot-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+      .foot-logo svg{width:24px;height:30px}
+      .foot-logo-name{line-height:1.05}
+      .foot-logo-name b{display:block;font-size:14px;font-weight:800}
+      .foot-logo-name b:first-child{color:#fff}
+      .foot-logo-name b:last-child{color:#C084FC}
+      .foot-nav{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+      .foot-nav a{font-size:13px;color:rgba(255,255,255,.6);text-decoration:none;transition:color .2s}
+      .foot-nav a:hover,.foot-nav a.active{color:#fff}
+      .foot-socials{display:flex;gap:14px}
+      .foot-socials a{
+        width:36px;height:36px;border-radius:9px;
+        background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);
+        display:flex;align-items:center;justify-content:center;
+        color:rgba(255,255,255,.5);text-decoration:none;transition:all .2s;
+      }
+      .foot-socials a:hover{background:rgba(139,47,224,.25);border-color:rgba(139,47,224,.45);color:#fff}
+      .foot-bottom{
+        background:rgba(0,0,0,.25);padding:14px 60px;
+        display:flex;align-items:center;justify-content:space-between;
+      }
+      .foot-bottom span{font-size:12px;color:rgba(255,255,255,.3)}
+      .cart-moq-note{
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  color:#999;
+}
+.bulk-pricing-note{
+  margin-top:14px;
+  font-size:14px;
+  line-height:1.5;
+  color:#b7b7c9;
+  text-align:center;
+}
+
+@media (max-width: 768px){
+
+  .bulk-pricing-note{
+    font-size:13px;
+    margin-top:12px;
+    padding:0 10px;
+  }
+
+}
+
+            @media(max-width:1100px){
+        .product-detail{padding:48px 32px;gap:40px}
+      }
+      @media(max-width:768px){
+        header{padding:0 20px}
+        nav{display:none}
+        .product-detail{
+          grid-template-columns:1fr;padding:40px 20px;gap:32px;
+        }
+        .product-images{padding:20px}
+        .product-info h1{font-size:28px}
+        .product-price{font-size:24px}
+        .add-to-cart{margin-top:20px}
+        footer{
+          grid-template-columns:1fr;text-align:center;gap:20px;padding:32px 24px;
+        }
+        .foot-nav{justify-content:center}
+        .foot-socials{justify-content:center}
+        .foot-bottom{flex-direction:column;gap:8px;padding:14px 24px;text-align:center}
+      }
+      @media(max-width:480px){
+        .product-detail{padding:32px 16px}
+        .product-info h1{font-size:24px}
+        .product-price{font-size:20px}
+        .variant-selector select,.quantity-selector input,.add-to-cart{font-size:14px;padding:12px}
+        .back-link{font-size:12px}
+      }
+
+            .marquee-wrap{
+        background:rgba(255,255,255,.025);
+        border-bottom:1px solid var(--border);
+        padding:22px 0;overflow:hidden;
+        
+        
+      }
+      .marquee-track{
+        display:flex;gap:56px;align-items:center;
+        animation:marquee 25s linear infinite;
+        width:max-content; 
+      }
+      .marquee-track img{
+          height: 40px;
+          width: auto;
+          opacity: 1;
+          filter:brightness(10);
+          flex-shrink: 0;
+      }
+      .marquee-track:hover{animation-play-state:paused}
+      @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+      .marquee-track img:hover{opacity:.65}
+
+      /* B2B Customer Approval Access Cards */
+      .b2b-access-card {
+        background: rgba(139, 47, 224, 0.08);
+        border: 1px solid rgba(139, 47, 224, 0.32);
+        border-radius: 14px;
+        padding: 24px;
+        margin-top: 24px;
+        text-align: center;
+      }
+      .b2b-access-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(139, 47, 224, 0.2);
+        color: #C089F8;
+        margin-bottom: 12px;
+      }
+      .b2b-access-card h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+      .b2b-access-card p {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-bottom: 18px;
+      }
+      .b2b-access-btn {
+        display: block;
+        width: 100%;
+        background: var(--purple-g);
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 13px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        box-shadow: 0 4px 18px rgba(139, 47, 224, 0.35);
+        transition: opacity 0.2s, transform 0.15s;
+        text-align: center;
+      }
+      .b2b-access-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .b2b-access-sublink {
+        display: inline-block;
+        margin-top: 12px;
+        color: #C089F8;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .b2b-access-sublink:hover {
+        text-decoration: underline;
+      }
+    </style>
+    {{ content_for_header }}
+  </head>
+  <body>
+    {%- assign is_semi_custom = false -%}
+    {%- if product.template_suffix == 'semi-custom-sets' or product.tags contains 'semi-custom' -%}
+      {%- assign is_semi_custom = true -%}
+    {%- endif -%}
+
+    {%- assign is_b2b_approved = false -%}
+    {%- assign is_b2b_pending = false -%}
+    {%- assign is_b2b_rejected = false -%}
+    {%- if customer -%}
+      {%- if customer.tags contains 'b2b-approved' -%}
+        {%- assign is_b2b_approved = true -%}
+      {%- elsif customer.tags contains 'b2b-pending' -%}
+        {%- assign is_b2b_pending = true -%}
+      {%- elsif customer.tags contains 'b2b-rejected' or customer.tags contains 'b2b-revoked' -%}
+        {%- assign is_b2b_rejected = true -%}
+      {%- endif -%}
+    {%- endif -%}
+
+    <div class="page" data-semi-custom="{{ is_semi_custom }}">
+            <div class="product-detail">
+        <div class="product-images">
+          {% if product.featured_image %}
+            <img src="{{ product.featured_image | img_url: '700x' }}" alt="{{ product.featured_image.alt | escape }}">
+          {% else %}
+            <div style="font-size:64px;opacity:.3">🧱</div>
+          {% endif %}
+        </div>
+
+        <div class="product-info">
+          {% if product.template_suffix == 'semi-custom-sets' %}
+            <a href="/pages/semi-custom-sets" class="back-link">← Back to Semi-Custom Sets</a>
+          {% else %}
+            <a href="/pages/catalog" class="back-link">← Back to catalog</a>
+          {% endif %}
+          <h1>{{ product.title }}</h1>
+          <span
+            >Starting at <span class="product-price">{{ product.price | money }} </span> per unit</span
+          >
+          {% if product.metafields.custom.brick_count != blank %}
+            <div class="brick-count">🧱 {{ product.metafields.custom.brick_count }} Bricks</div>
+          {% endif %}
+          <div class="product-description">
+            {{ product.description | strip_html | truncate: 200, '…' }}
+          </div>
+
+          {% if product.template_suffix == 'semi-custom-sets' %}
+            {% render 'semi-custom-tiers', product: product %}
+          {% endif %}
+
+          {% form 'product', product %}
+            {%- unless product.has_only_default_variant -%}
+              <div class="variant-selector">
+                <label for="variant-select">Options</label>
+                <select id="variant-select" name="id">
+                  {% for variant in product.variants %}
+                    <option
+                      value="{{ variant.id }}"
+                      {% if variant == product.selected_or_first_available_variant %}
+                        selected
+                      {% endif %}
+                    >
+                      {{ variant.title }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {%- else -%}
+                            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+            {%- endunless -%}
+{% if product.metafields.custom.minimum_order != blank %}
+  {% assign minimum_order = product.metafields.custom.minimum_order %}
+
+  <div class="product-meta-box">
+    <div class="product-meta-row">
+      <div>
+        <div class="product-meta-label">Minimum Order Quantity</div>
+        <div class="product-meta-value">MOQ: {{ minimum_order }} Units</div>
+      </div>
+
+      <div class="quantity-selector">
+        <input
+          type="number"
+          name="quantity"
+          value="{{ minimum_order }}"
+          min="{{ minimum_order }}"
+          step="1"
+          max="9999"
+        >
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="quantity-selector">
+    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Qty</label>
+    <input type="number" name="quantity" value="1" min="1" max="9999">
+  </div>
+{% endif %}
+            {%- if is_semi_custom and is_b2b_approved == false -%}
+              <!-- Hidden anchor button so Customix Personalizer attaches and renders for non-approved visitors -->
+              <button
+                type="submit"
+                name="add"
+                id="bbAddToCartBtn"
+                class="add-to-cart b2b-disabled"
+                style="display:none !important;"
+                disabled
+                aria-hidden="true"
+              >
+                Start Your Order
+              </button>
+
+              <div id="b2bAccessCardContainer">
+                {%- if customer -%}
+                  {%- if is_b2b_pending -%}
+                    <div class="b2b-access-card b2b-pending-state" data-b2b-state="pending">
+                      <div class="b2b-access-badge">⏳ Under Review</div>
+                      <h3>Wholesale Application Under Review</h3>
+                      <p>Your wholesale account is currently under review by our team. Direct purchasing access will be unlocked once approved.</p>
+                      <a href="/pages/contact" class="b2b-access-sublink">Questions or custom requests? Contact us →</a>
+                    </div>
+                  {%- elsif is_b2b_rejected -%}
+                    <div class="b2b-access-card b2b-rejected-state" data-b2b-state="rejected">
+                      <div class="b2b-access-badge" style="background:rgba(220,53,69,0.18);color:#FF8080;">🔒 Access Restricted</div>
+                      <h3>Wholesale Access Inactive</h3>
+                      <p>Your wholesale account is not currently active for direct ordering. You may submit an application for wholesale reconsideration below.</p>
+                      <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+                      <a href="/pages/contact" class="b2b-access-sublink">Questions regarding your account? Contact us →</a>
+                    </div>
+                  {%- else -%}
+                    <!-- Signed-in customer who has not applied yet -->
+                    <div class="b2b-access-card b2b-not-applied-state" data-b2b-state="not-applied">
+                      <div class="b2b-access-badge">🔒 Wholesale Exclusive</div>
+                      <h3>Wholesale Purchasing Access Required</h3>
+                      <p>Our semi-custom sets are available exclusively to verified B2B partners. Apply today to unlock direct ordering.</p>
+                      <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+                      <a href="/pages/contact" class="b2b-access-sublink">Questions or custom requests? Contact us →</a>
+                    </div>
+                  {%- endif -%}
+                {%- else -%}
+                  <!-- Guest visitor (not signed in) -->
+                  <div class="b2b-access-card b2b-guest-state" data-b2b-state="guest">
+                    <div class="b2b-access-badge">🔒 Wholesale Exclusive</div>
+                    <h3>Wholesale Purchasing Access Required</h3>
+                    <p>Our semi-custom sets are available exclusively to verified B2B partners. Apply today to unlock direct ordering.</p>
+                    <a href="/pages/wholesale-signup" class="b2b-access-btn">Apply for Wholesale Access</a>
+                    <a href="/account/login?return_to={{ request.path | url_encode }}" class="b2b-access-sublink">Already have an approved account? Sign In →</a>
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- else -%}
+              <button
+                type="submit"
+                name="add"
+                id="bbAddToCartBtn"
+                class="add-to-cart"
+                {% unless product.available %}
+                  disabled
+                {% endunless %}
+              >
+                {% if product.available %}Start Your Order{% else %}Sold Out{% endif %}
+              </button>
+            {%- endif -%}
+          {% endform %}
+          <p class="bulk-pricing-note">
+  Need larger quantities? Contact us for custom bulk pricing.
+</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="marquee-wrap">
+<div class="marquee-track">
+  <img src="https://i.ibb.co/B5pyJjRQ/image-removebg-preview-4.png" alt="image removebg preview (4)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/S4QNG8m5/image-removebg-preview-6.png" alt="image-removebg-preview-6" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcd6725f2b8843f3067_Visa-logo.png" alt="Visa"/>
+  <img src="https://i.ibb.co/NgfYzVX3/image-removebg-preview-11.png" alt="image removebg preview (11)" border="0" style="width: 200px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/DDpzCkMR/Whats-App-Image-2026-05-11-at-7-13-51-PM-removebg-preview.png" alt="Logo" style="width: 140px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/35fCZNzB/image-removebg-preview-3.png" alt="image removebg preview (3)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/yzvNx5p/image-removebg-preview-1.png" alt="image removebg preview (1)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb3192a85f3a16f42b_toyota-shadow.png" alt="Toyota"/>
+  <img src="https://i.ibb.co/FbY5fRtJ/image-removebg-preview.png" alt="image removebg preview" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/DfJMv8yx/image-removebg-preview-12.png" alt="image removebg preview (12)" border="0" style="width: 180px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/4w3LhCD6/image-removebg-preview-14.png" alt="image removebg preview (14)" border="0" style="width: 120px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/J6xS7yj/image-removebg-preview-2.png" alt="image removebg preview (2)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb824936ccd23ce7e4_Dominos-logo.png" alt="Dominos"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcda80833e3f6eb02ab_amazon-logo.png" alt="Amazon"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb7fb3569ad54968a2_docker-logo.png" alt="Docker"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb6f350780ffec4a61_Milestone-logo.png" alt="Milestone"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb2d86380a40e89c80_Pinterest-logo.png" alt="Pinterest"/>
+  
+    <img src="https://i.ibb.co/B5pyJjRQ/image-removebg-preview-4.png" alt="image removebg preview (4)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/S4QNG8m5/image-removebg-preview-6.png" alt="image-removebg-preview-6" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcd6725f2b8843f3067_Visa-logo.png" alt="Visa"/>
+  <img src="https://i.ibb.co/NgfYzVX3/image-removebg-preview-11.png" alt="image removebg preview (11)" border="0" style="width: 200px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/DDpzCkMR/Whats-App-Image-2026-05-11-at-7-13-51-PM-removebg-preview.png" alt="Logo" style="width: 140px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/35fCZNzB/image-removebg-preview-3.png" alt="image removebg preview (3)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/yzvNx5p/image-removebg-preview-1.png" alt="image removebg preview (1)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb3192a85f3a16f42b_toyota-shadow.png" alt="Toyota"/>
+  <img src="https://i.ibb.co/FbY5fRtJ/image-removebg-preview.png" alt="image removebg preview" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/DfJMv8yx/image-removebg-preview-12.png" alt="image removebg preview (12)" border="0" style="width: 180px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/4w3LhCD6/image-removebg-preview-14.png" alt="image removebg preview (14)" border="0" style="width: 120px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://i.ibb.co/J6xS7yj/image-removebg-preview-2.png" alt="image removebg preview (2)" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb824936ccd23ce7e4_Dominos-logo.png" alt="Dominos"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcda80833e3f6eb02ab_amazon-logo.png" alt="Amazon"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb7fb3569ad54968a2_docker-logo.png" alt="Docker"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb6f350780ffec4a61_Milestone-logo.png" alt="Milestone"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/693a05eb2d86380a40e89c80_Pinterest-logo.png" alt="Pinterest"/>
+  
+  {% comment %} <img src="https://i.ibb.co/yF53w601/image-removebg-preview-16.png" alt="image-removebg-preview-16" border="0" style="width: 100px; height: auto; filter: brightness(0) invert(1);">milestone {% endcomment %}
+  {% comment %} <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/694ab9f5812e3716f09f1bd2_Hyundai-p-500.png" alt="Hyundai"/>
+  <img src="https://i.ibb.co/sMdR5tf/zaxbys-logo-white-transparent.png" alt="zaxbys-logo-white-transparent"/>  
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcd5dbd78df6a4f691f_Penske-logo.png" alt="Penske"/>
+  <img src="https://cdn.prod.website-files.com/68f162405ad8a485bb138d7e/6939fbcc109e37652f8adc7a_Netflix-logo.png" alt="Netflix"/> {% endcomment %}
+</div>
+</div>
+
+{% render 'product-inspiration-gallery', product: product %}
+
+    <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const qtyInputs = document.querySelectorAll('input[type="number"][name="quantity"], input[type="number"][name="updates[]"]');
+
+    qtyInputs.forEach(function (input) {
+      const min = parseInt(input.getAttribute('min')) || 1;
+
+      input.addEventListener('blur', function () {
+        let value = parseInt(input.value);
+
+        if (!value || value < min) {
+          input.value = min;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      input.addEventListener('change', function () {
+        let value = parseInt(input.value);
+
+        if (!value || value < min) {
+          input.value = min;
+        }
+      });
+    });
+  });
+</script>
+    <script>
+      window.BB_CUSTOMER_ID = {{ customer.id | json }};
+      window.BB_CUSTOMER_EMAIL = {{ customer.email | json }};
+      window.BB_CUSTOMER_TAGS = {{ customer.tags | json }};
+      window.BB_CUSTOMER_APPROVED = {{ is_b2b_approved | json }};
+      window.BB_IS_SEMI_CUSTOM = {{ is_semi_custom | json }};
+      window.BB_API_BASE_URL = 'https://business-bricks-customer-approval.onrender.com';
+    </script>
+    <script src="{{ 'b2b-approval-gate.js' | asset_url }}" defer></script>
+  </body>
+</html>

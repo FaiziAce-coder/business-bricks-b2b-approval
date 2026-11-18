@@ -342,7 +342,7 @@ app.post('/api/admin/applications/bulk-delete', async (req, res) => {
     const result = await applicationService.bulkDeleteApplications(ids, { adminUser: 'Administrator' });
     res.json({ success: true, count: result.count, deleted: result.deleted });
   } catch (error) {
-    logger.error('Bulk delete applications failed:', error);
+    console.error('Bulk delete applications failed:', error);
     res.status(error.status || 500).json({ success: false, error: error.message });
   }
 });
@@ -355,7 +355,7 @@ app.delete('/api/admin/applications/:id', async (req, res) => {
     const result = await applicationService.deleteApplication(req.params.id, { adminUser: 'Administrator' });
     res.json(result);
   } catch (error) {
-    logger.error('Delete application failed:', error);
+    console.error('Delete application failed:', error);
     res.status(error.status || 500).json({ success: false, error: error.message });
   }
 });

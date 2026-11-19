@@ -574,6 +574,31 @@
             <span class="detail-val"><code>${escapeHtml(app.taxId || 'Not provided')}</code></span>
           </div>
           <div class="detail-item">
+            <span class="detail-label">ASI Number</span>
+            <span class="detail-val"><code>${escapeHtml(app.asiNumber || '—')}</code></span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">SAGE Number</span>
+            <span class="detail-val"><code>${escapeHtml(app.sageNumber || '—')}</code></span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">PPAI Number</span>
+            <span class="detail-val"><code>${escapeHtml(app.ppaiNumber || '—')}</code></span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">How Heard</span>
+            <span class="detail-val">${escapeHtml(app.howHeard || '—')}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Est. Monthly Volume</span>
+            <span class="detail-val">${escapeHtml(app.estimatedVolume || '—')}</span>
+          </div>
+          ${app.reasonForApplying ? `
+          <div class="detail-item full-width" style="grid-column: 1 / -1;">
+            <span class="detail-label">Reason for Applying</span>
+            <span class="detail-val">${escapeHtml(app.reasonForApplying)}</span>
+          </div>` : ''}
+          <div class="detail-item">
             <span class="detail-label">Shopify Customer ID</span>
             <span class="detail-val"><code>${escapeHtml(app.shopifyCustomerId || 'Linked on approval')}</code></span>
           </div>

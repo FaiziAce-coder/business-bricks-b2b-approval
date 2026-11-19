@@ -151,7 +151,7 @@ async function findCustomerById(customerId, accessToken) {
  * Create a new customer profile in Shopify if one does not exist.
  * Avoids duplicate customer records by querying by email first.
  */
-async function createCustomer({ firstName, lastName, email, company, phone, tags = ['b2b-approved'] }, accessToken) {
+async function createCustomer({ firstName, lastName, email, company, phone, asiNumber, sageNumber, ppaiNumber, howHeard, tags = ['b2b-approved'] }, accessToken) {
   if (!email) throw new Error('Email is required to create a customer');
   const cleanEmail = email.trim().toLowerCase();
 
@@ -196,6 +196,10 @@ async function createCustomer({ firstName, lastName, email, company, phone, tags
 
   const notes = [];
   if (company) notes.push(`Wholesale Company: ${company}`);
+  if (asiNumber) notes.push(`ASI: ${asiNumber}`);
+  if (sageNumber) notes.push(`SAGE: ${sageNumber}`);
+  if (ppaiNumber) notes.push(`PPAI: ${ppaiNumber}`);
+  if (howHeard) notes.push(`Referral: ${howHeard}`);
   if (phone && !formattedPhone) notes.push(`Contact Phone: ${phone}`);
 
   const input = {

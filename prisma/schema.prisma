@@ -40,6 +40,12 @@ model Application {
   country                String
   website                String?
   taxId                  String?
+  asiNumber              String?
+  sageNumber             String?
+  ppaiNumber             String?
+  howHeard               String?
+  estimatedVolume        String?
+  reasonForApplying      String?
   status                 ApplicationStatus @default(PENDING)
   shopifyCustomerId      String?
   emailVerified          Boolean           @default(false)

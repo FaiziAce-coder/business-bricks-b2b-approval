@@ -85,6 +85,14 @@
       .add-to-cart:disabled{opacity:.4;pointer-events:none}
       .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:8px;transition:color .2s}
       .back-link:hover{color:#C089F8}
+      .brick-count{
+        display:inline-flex;align-items:center;gap:6px;
+        font-size:13px;font-weight:600;color:var(--muted);
+        margin:6px 0 12px 0;
+      }
+      .brick-icon{
+        width:15px;height:15px;fill:var(--purple);flex-shrink:0;
+      }
       .product-meta-box {
   margin: 28px 0 24px;
   display: grid;
@@ -590,7 +598,7 @@
           {% if product.featured_image %}
             <img src="{{ product.featured_image | img_url: '700x' }}" alt="{{ product.featured_image.alt | escape }}">
           {% else %}
-            <div style="font-size:64px;opacity:.3">🧱</div>
+            <div style="display:flex;align-items:center;justify-content:center;opacity:.3"><svg class="brick-icon" style="width:64px;height:64px;" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6V5a2 2 0 0 0-2-2h-3V2a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v1H7a2 2 0 0 0-2 2v1a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-7-3h1v1h-1V3ZM7 5h10v1H7V5Zm12 14H5V8h14v11Z"/></svg></div>
           {% endif %}
         </div>
 
@@ -605,7 +613,10 @@
             >Starting at <span class="product-price">{{ product.price | money }} </span> per unit</span
           >
           {% if product.metafields.custom.brick_count != blank %}
-            <div class="brick-count">🧱 {{ product.metafields.custom.brick_count }} Bricks</div>
+            <div class="brick-count">
+              <svg class="brick-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6V5a2 2 0 0 0-2-2h-3V2a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v1H7a2 2 0 0 0-2 2v1a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-7-3h1v1h-1V3ZM7 5h10v1H7V5Zm12 14H5V8h14v11Z"/></svg>
+              <span>{{ product.metafields.custom.brick_count }} Bricks</span>
+            </div>
           {% endif %}
           <div class="product-description">
             {{ product.description | strip_html | truncate: 200, '…' }}

@@ -1,0 +1,725 @@
+{% comment %}
+  Design inspiration showcase for semi-custom product pages
+{% endcomment %}
+
+{% liquid
+  assign metafield_inspirations = product.metafields.custom.design_inspirations.value
+%}
+
+{% capture fallback_slides %}
+  {% render 'semi-custom-inspiration-fallback', product: product %}
+{% endcapture %}
+{% assign fallback_slides_clean = fallback_slides | strip %}
+
+{% if metafield_inspirations != blank or fallback_slides_clean != blank %}
+  <section class="inspiration-banner-section" id="product-inspiration-gallery" aria-label="Design Inspiration Banner">
+    <div class="inspiration-banner-container">
+      <div class="inspiration-banner-card" data-inspiration-banner>
+        
+                <div class="inspiration-banner__media-col">
+          <div class="inspiration-banner__carousel-frame" role="region" aria-roledescription="carousel" aria-label="Custom Design Showcase">
+            
+            <div class="inspiration-banner__slides-track">
+              {% if metafield_inspirations != blank %}
+                {% for item in metafield_inspirations %}
+                  {% liquid
+                    assign item_portfolio_url = item.portfolio_url | default: '' | replace: '/pages/design-portfolio', '/pages/catalog'
+                    if item_portfolio_url == blank
+                      assign item_industry_param = item.industry | default: '' | strip | url_param_escape
+                      assign item_title_param = item.title | default: '' | strip | url_param_escape
+                      if item_industry_param != blank and item_title_param != blank
+                        assign item_portfolio_url = '/pages/catalog?industry=' | append: item_industry_param | append: '&search=' | append: item_title_param
+                      elsif item_industry_param != blank
+                        assign item_portfolio_url = '/pages/catalog?industry=' | append: item_industry_param
+                      elsif item_title_param != blank
+                        assign item_portfolio_url = '/pages/catalog?search=' | append: item_title_param
+                      else
+                        assign item_portfolio_url = '/pages/catalog'
+                      endif
+                    endif
+                  %}
+                  <div
+                    class="inspiration-banner__slide{% if forloop.first %} is-active{% endif %}"
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label="Slide {{ forloop.index }} of {{ forloop.length }}"
+                    data-index="{{ forloop.index0 }}"
+                    data-title="{{ item.title | escape }}"
+                    data-bricks="{{ item.piece_count }}"
+                    data-industry="{{ item.industry | escape }}"
+                    data-portfolio-url="{{ item_portfolio_url | escape }}"
+                  >
+                    <div class="inspiration-banner__img-wrap">
+                      <img
+                        src="{{ item.image_url }}"
+                        alt="{{ item.title | escape }}"
+                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                        width="600"
+                        height="450"
+                        class="inspiration-banner__img"
+                      >
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                {{ fallback_slides_clean }}
+              {% endif %}
+            </div>
+
+                        <div class="inspiration-banner__badges">
+              <span class="inspiration-banner__badge">Client Project</span>
+              <span class="inspiration-banner__bricks-pill" data-banner-bricks style="display: none;"></span>
+            </div>
+
+                        <button type="button" class="inspiration-banner__nav inspiration-banner__nav--prev" aria-label="Previous custom design" data-banner-prev style="display: none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" class="inspiration-banner__nav inspiration-banner__nav--next" aria-label="Next custom design" data-banner-next style="display: none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+
+                        <div class="inspiration-banner__dots" role="tablist" aria-label="Design slides" data-banner-dots style="display: none;"></div>
+
+          </div>
+        </div>
+
+                <div class="inspiration-banner__content-col">
+          <div class="inspiration-banner__eyebrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            Previous Custom Work
+          </div>
+
+          <h2 class="inspiration-banner__heading">
+            Custom {{ product.title }} Sets Tailored for Your Brand
+          </h2>
+
+          <p class="inspiration-banner__body">
+            Every model in our Semi-Custom lineup serves as a proven starting point. Our in-house team tailors this base build with your corporate pantone colors, precision UV-printed logo bricks, custom minifigures, and bespoke gift packaging.
+          </p>
+
+                    <div class="inspiration-banner__active-card" data-banner-active-card>
+            <div class="inspiration-banner__active-header">
+              <span class="inspiration-banner__active-eyebrow">Featured Example</span>
+              <span class="inspiration-banner__active-industry" data-active-industry></span>
+            </div>
+            <div class="inspiration-banner__active-title" data-active-title></div>
+            <a href="/pages/catalog" class="inspiration-banner__active-link" data-active-link>
+              View project in design portfolio &rarr;
+            </a>
+          </div>
+
+                    <div class="inspiration-banner__action">
+            <a
+              href="/pages/request-a-quote?product={{ product.handle | url_encode }}&product_title={{ product.title | url_encode }}&source=product_inspiration"
+              class="inspiration-banner__cta-btn"
+              id="inspiration-banner-inquiry-btn"
+            >
+              Inspired by This Design? Let's Talk
+            </a>
+            <span class="inspiration-banner__cta-subtext">
+              Complimentary 3D digital renders & custom box design included &middot; MOQ 250 units
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <style>
+        .inspiration-banner-section {
+      background: var(--black, #08080D);
+      padding: 60px 40px;
+      border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      position: relative;
+      z-index: 2;
+    }
+    .inspiration-banner-container {
+      max-width: 1160px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .inspiration-banner-card {
+      background: linear-gradient(145deg, #121224 0%, #0E0E1B 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 44px;
+      display: grid;
+      grid-template-columns: 52% 48%;
+      gap: 48px;
+      align-items: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+    .inspiration-banner-card::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: -100px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(139, 47, 224, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+        .inspiration-banner__media-col {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+    .inspiration-banner__carousel-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      min-height: 360px;
+      max-height: 460px;
+      background: radial-gradient(circle at center, rgba(139, 47, 224, 0.07) 0%, rgba(9, 9, 16, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .inspiration-banner__slides-track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .inspiration-banner__slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96);
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .inspiration-banner__slide.is-active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    .inspiration-banner__img-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .inspiration-banner__img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.5));
+      transition: transform 0.35s ease;
+    }
+    .inspiration-banner__carousel-frame:hover .inspiration-banner__slide.is-active .inspiration-banner__img {
+      transform: scale(1.03);
+    }
+
+        .inspiration-banner__badges {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+    .inspiration-banner__badge {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      color: #E2E8F0;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .inspiration-banner__bricks-pill {
+      background: rgba(139, 47, 224, 0.25);
+      backdrop-filter: blur(8px);
+      color: #E9D5FF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+        .inspiration-banner__nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      padding: 0;
+    }
+    .inspiration-banner__nav:hover {
+      background: rgba(139, 47, 224, 0.85);
+      border-color: rgba(168, 85, 247, 0.8);
+      transform: translateY(-50%) scale(1.08);
+    }
+    .inspiration-banner__nav:focus-visible {
+      outline: 2px solid #C084FC;
+      outline-offset: 2px;
+    }
+    .inspiration-banner__nav--prev {
+      left: 14px;
+    }
+    .inspiration-banner__nav--next {
+      right: 14px;
+    }
+
+        .inspiration-banner__dots {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(10, 10, 18, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+    .inspiration-banner__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .inspiration-banner__dot:hover {
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .inspiration-banner__dot.is-active {
+      width: 20px;
+      border-radius: 99px;
+      background: #C084FC;
+      box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+    }
+    .inspiration-banner__dot:focus-visible {
+      outline: 2px solid #C084FC;
+      outline-offset: 1px;
+    }
+
+        .inspiration-banner__content-col {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .inspiration-banner__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #C084FC;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      margin-bottom: 12px;
+      background: rgba(139, 47, 224, 0.14);
+      padding: 5px 13px;
+      border-radius: 99px;
+      border: 1px solid rgba(139, 47, 224, 0.3);
+      align-self: flex-start;
+    }
+    .inspiration-banner__heading {
+      font-size: clamp(23px, 2.5vw, 32px);
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .inspiration-banner__body {
+      font-size: 14.5px;
+      color: var(--muted, rgba(255, 255, 255, 0.68));
+      line-height: 1.6;
+      margin: 0 0 22px 0;
+    }
+
+        .inspiration-banner__active-card {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 26px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .inspiration-banner__active-card:hover {
+      border-color: rgba(168, 85, 247, 0.35);
+      background: rgba(255, 255, 255, 0.045);
+    }
+    .inspiration-banner__active-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .inspiration-banner__active-eyebrow {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .inspiration-banner__active-industry {
+      font-size: 11px;
+      font-weight: 600;
+      color: #C084FC;
+    }
+    .inspiration-banner__active-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    .inspiration-banner__active-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #A855F7;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.18s ease, transform 0.18s ease;
+    }
+    .inspiration-banner__active-link:hover {
+      color: #C084FC;
+      transform: translateX(3px);
+    }
+
+        .inspiration-banner__action {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .inspiration-banner__cta-btn {
+      background: var(--purple-g, linear-gradient(135deg, #9B3FEF, #7B28CC));
+      color: #FFFFFF;
+      font-size: 14.5px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: 99px;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(139, 47, 224, 0.42);
+      transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      align-self: flex-start;
+    }
+    .inspiration-banner__cta-btn:hover {
+      opacity: 0.94;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(139, 47, 224, 0.55);
+    }
+    .inspiration-banner__cta-subtext {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.48);
+      line-height: 1.45;
+    }
+
+        @media (max-width: 960px) {
+      .inspiration-banner-card {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 30px 24px;
+      }
+      .inspiration-banner__carousel-frame {
+        min-height: 280px;
+        max-height: 380px;
+      }
+      .inspiration-banner__cta-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+    @media (max-width: 640px) {
+      .inspiration-banner-section {
+        padding: 40px 16px;
+      }
+      .inspiration-banner-card {
+        padding: 22px 18px;
+        border-radius: 18px;
+      }
+      .inspiration-banner__carousel-frame {
+        min-height: 240px;
+        max-height: 320px;
+      }
+      .inspiration-banner__img-wrap {
+        padding: 16px;
+      }
+    }
+
+        @media (prefers-reduced-motion: reduce) {
+      .inspiration-banner__slide {
+        transition: none !important;
+      }
+      .inspiration-banner__img {
+        transition: none !important;
+      }
+      .inspiration-banner__cta-btn {
+        transition: none !important;
+      }
+    }
+  </style>
+
+  <script>
+    (function () {
+      function initInspirationBanner() {
+        const container = document.querySelector('[data-inspiration-banner]');
+        if (!container) return;
+
+        const slides = container.querySelectorAll('.inspiration-banner__slide');
+        if (!slides || slides.length === 0) return;
+
+        const prevBtn = container.querySelector('[data-banner-prev]');
+        const nextBtn = container.querySelector('[data-banner-next]');
+        const dotsContainer = container.querySelector('[data-banner-dots]');
+        const bricksPill = container.querySelector('[data-banner-bricks]');
+        
+        const activeTitle = container.querySelector('[data-active-title]');
+        const activeIndustry = container.querySelector('[data-active-industry]');
+        const activeLink = container.querySelector('[data-active-link]');
+
+        let currentIndex = 0;
+        let autoPlayTimer = null;
+        const autoPlayInterval = 5500;
+        const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function buildPortfolioUrl(rawUrl, industry, title) {
+          const cleanUrl = (rawUrl || '').trim();
+          const cleanIndustry = (industry || '').trim();
+          const cleanTitle = (title || '').trim();
+
+          if (cleanUrl) {
+            try {
+              const parsed = new URL(cleanUrl, window.location.origin);
+              if (/^\/pages\/design-portfolio\/?$/i.test(parsed.pathname)) {
+                parsed.pathname = '/pages/catalog';
+              }
+              if (!parsed.searchParams.has('industry') && cleanIndustry) {
+                parsed.searchParams.set('industry', cleanIndustry);
+              }
+              if (!parsed.searchParams.has('search') && cleanTitle) {
+                parsed.searchParams.set('search', cleanTitle);
+              }
+              return parsed.pathname + parsed.search + parsed.hash;
+            } catch (e) {
+              return cleanUrl.replace(/^\/pages\/design-portfolio\/?/i, '/pages/catalog');
+            }
+          }
+
+          const params = new URLSearchParams();
+          if (cleanIndustry) params.set('industry', cleanIndustry);
+          if (cleanTitle) params.set('search', cleanTitle);
+          const query = params.toString();
+          return query ? `/pages/catalog?${query}` : '';
+        }
+
+        function updateActiveDetails(index) {
+          const slide = slides[index];
+          if (!slide) return;
+
+          const title = slide.getAttribute('data-title') || '';
+          const bricks = slide.getAttribute('data-bricks');
+          const industry = slide.getAttribute('data-industry') || '';
+          const portfolioUrl = buildPortfolioUrl(
+            slide.getAttribute('data-portfolio-url') || '',
+            industry,
+            title
+          );
+          if (bricksPill) {
+            if (bricks && bricks.trim() !== '') {
+              bricksPill.innerHTML = '<svg class="brick-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:13px;height:13px;fill:currentColor;vertical-align:-1px;margin-right:4px;display:inline-block;"><path d="M19 6V5a2 2 0 0 0-2-2h-3V2a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v1H7a2 2 0 0 0-2 2v1a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-7-3h1v1h-1V3ZM7 5h10v1H7V5Zm12 14H5V8h14v11Z"/></svg>' + bricks.trim() + ' Bricks';
+              bricksPill.style.display = 'inline-block';
+            } else {
+              bricksPill.style.display = 'none';
+            }
+          }
+          if (activeTitle) activeTitle.textContent = title;
+          if (activeIndustry) activeIndustry.textContent = industry;
+          if (activeLink) {
+            if (portfolioUrl) {
+              activeLink.href = portfolioUrl;
+              activeLink.style.display = 'inline-flex';
+            } else {
+              activeLink.style.display = 'none';
+            }
+          }
+          const inquiryBtn = container.querySelector('#inspiration-banner-inquiry-btn');
+          if (inquiryBtn) {
+            const slideImg = slide.querySelector('img') ? slide.querySelector('img').src : '';
+            inquiryBtn.href = `/pages/request-a-quote?product={{ product.handle | url_encode }}&product_title={{ product.title | url_encode }}&design_title=${encodeURIComponent(title)}&bricks=${encodeURIComponent(bricks || '')}&industry=${encodeURIComponent(industry)}&design_image=${encodeURIComponent(slideImg)}&source=product_inspiration`;
+          }
+        }
+
+        function goToSlide(index) {
+          if (index < 0) {
+            index = slides.length - 1;
+          } else if (index >= slides.length) {
+            index = 0;
+          }
+
+          slides.forEach(function (slide, idx) {
+            if (idx === index) {
+              slide.classList.add('is-active');
+              slide.setAttribute('aria-hidden', 'false');
+            } else {
+              slide.classList.remove('is-active');
+              slide.setAttribute('aria-hidden', 'true');
+            }
+          });
+
+          if (dotsContainer) {
+            const dots = dotsContainer.querySelectorAll('.inspiration-banner__dot');
+            dots.forEach(function (dot, idx) {
+              if (idx === index) {
+                dot.classList.add('is-active');
+                dot.setAttribute('aria-selected', 'true');
+              } else {
+                dot.classList.remove('is-active');
+                dot.setAttribute('aria-selected', 'false');
+              }
+            });
+          }
+
+          currentIndex = index;
+          updateActiveDetails(currentIndex);
+        }
+        updateActiveDetails(0);
+        if (slides.length <= 1) {
+          if (prevBtn) prevBtn.style.display = 'none';
+          if (nextBtn) nextBtn.style.display = 'none';
+          if (dotsContainer) dotsContainer.style.display = 'none';
+          return;
+        }
+        if (prevBtn) prevBtn.style.display = 'flex';
+        if (nextBtn) nextBtn.style.display = 'flex';
+        if (dotsContainer) {
+          dotsContainer.innerHTML = '';
+          dotsContainer.style.display = 'flex';
+          slides.forEach(function (_, idx) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'inspiration-banner__dot' + (idx === 0 ? ' is-active' : '');
+            dot.setAttribute('role', 'tab');
+            dot.setAttribute('aria-label', 'View custom design ' + (idx + 1));
+            dot.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+            dot.addEventListener('click', function () {
+              goToSlide(idx);
+              restartAutoPlay();
+            });
+            dotsContainer.appendChild(dot);
+          });
+        }
+        if (prevBtn) {
+          prevBtn.addEventListener('click', function () {
+            goToSlide(currentIndex - 1);
+            restartAutoPlay();
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', function () {
+            goToSlide(currentIndex + 1);
+            restartAutoPlay();
+          });
+        }
+        function startAutoPlay() {
+          if (prefersReducedMotion) return;
+          stopAutoPlay();
+          autoPlayTimer = setInterval(function () {
+            goToSlide(currentIndex + 1);
+          }, autoPlayInterval);
+        }
+
+        function stopAutoPlay() {
+          if (autoPlayTimer) {
+            clearInterval(autoPlayTimer);
+            autoPlayTimer = null;
+          }
+        }
+
+        function restartAutoPlay() {
+          stopAutoPlay();
+          startAutoPlay();
+        }
+        container.addEventListener('mouseenter', stopAutoPlay);
+        container.addEventListener('mouseleave', startAutoPlay);
+        container.addEventListener('focusin', stopAutoPlay);
+        container.addEventListener('focusout', startAutoPlay);
+
+        // Touch swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const frame = container.querySelector('.inspiration-banner__carousel-frame');
+        if (frame) {
+          frame.addEventListener('touchstart', function (e) {
+            touchStartX = e.changedTouches[0].screenX;
+            stopAutoPlay();
+          }, { passive: true });
+
+          frame.addEventListener('touchend', function (e) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diffX = touchEndX - touchStartX;
+            if (Math.abs(diffX) > 40) {
+              if (diffX < 0) {
+                goToSlide(currentIndex + 1);
+              } else {
+                goToSlide(currentIndex - 1);
+              }
+            }
+            startAutoPlay();
+          }, { passive: true });
+        }
+        startAutoPlay();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initInspirationBanner);
+      } else {
+        initInspirationBanner();
+      }
+    })();
+  </script>
+{% endif %}

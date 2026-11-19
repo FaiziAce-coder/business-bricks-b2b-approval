@@ -1,0 +1,784 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bb-purple:      #8B2FE0;
+      --bb-purple-mid:  #7B28CC;
+      --bb-purple-dark: #4A1080;
+      --bb-purple-glow: rgba(139, 47, 224, 0.35);
+      --bb-purple-grad: linear-gradient(135deg, #9B3FEF 0%, #7B28CC 100%);
+      --bb-black:       #0A0A0F;
+      --bb-card-bg:     #111118;
+      --bb-border:      rgba(255, 255, 255, 0.08);
+      --bb-border-focus:#8B2FE0;
+      --bb-text:        #FFFFFF;
+      --bb-muted:       rgba(255, 255, 255, 0.60);
+      --bb-subtle:      rgba(255, 255, 255, 0.30);
+      --radius-sm:      8px;
+      --radius-md:      12px;
+      --radius-lg:      20px;
+    }
+
+    .wholesale-signup-page {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bb-black);
+      color: var(--bb-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wholesale-signup-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(139,47,224,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 80%, rgba(75,16,128,0.22) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Main Container */
+    .wholesale-signup-page main {
+      flex: 1;
+      padding: 60px 24px 80px;
+      display: flex;
+      justify-content: center;
+    }
+    .form-container {
+      width: 100%;
+      max-width: 840px;
+    }
+
+    /* Hero / Intro */
+    .form-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .eyebrow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(139,47,224,0.12);
+      border: 1px solid rgba(139,47,224,0.30);
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #C089F8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .form-hero h1 {
+      font-size: clamp(32px, 4.5vw, 46px);
+      font-weight: 900;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #D4CEE8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .form-hero p {
+      font-size: 16px;
+      color: var(--bb-muted);
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--bb-card-bg);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--radius-lg);
+      padding: 44px 48px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      position: relative;
+    }
+
+    /* Form Sections */
+    .form-section-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .form-section-title span.section-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(139,47,224,0.20);
+      color: #C089F8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .grid-col-2 {
+      grid-column: span 2;
+    }
+
+    /* Inputs & Labels */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--bb-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .field-group label span.req {
+      color: #F87171;
+      margin-left: 3px;
+    }
+    .field-group label span.opt {
+      font-size: 11px;
+      color: var(--bb-subtle);
+      font-weight: 400;
+    }
+
+    .field-input, .field-select {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      width: 100%;
+    }
+    .field-input:focus, .field-select:focus {
+      background: rgba(255,255,255,0.06);
+      border-color: var(--bb-border-focus);
+      box-shadow: 0 0 0 3px rgba(139,47,224,0.25);
+    }
+    .field-input.has-error, .field-select.has-error {
+      border-color: #EF4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .error-msg {
+      font-size: 12px;
+      color: #F87171;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .field-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23C089F8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      cursor: pointer;
+    }
+    .field-select option {
+      background: #14141E;
+      color: #fff;
+    }
+
+    /* Honeypot */
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    /* Submit Button & Actions */
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .btn-submit {
+      width: 100%;
+      background: var(--bb-purple-grad);
+      color: #fff;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px 28px;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(139,47,224,0.40);
+      transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(139,47,224,0.50);
+      opacity: 0.95;
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .form-footer-note {
+      font-size: 13px;
+      color: var(--bb-muted);
+      text-align: center;
+    }
+    .form-footer-note a {
+      color: #C089F8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .form-footer-note a:hover {
+      text-decoration: underline;
+    }
+
+    /* Alert Banners */
+    .alert-banner {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .alert-banner.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #FCA5A5;
+    }
+    .alert-banner.success {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #86EFAC;
+    }
+
+    /* Success Card State */
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .success-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #4ADE80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .success-state h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .success-ref-pill {
+      display: inline-block;
+      background: rgba(139,47,224,0.15);
+      border: 1px solid rgba(139,47,224,0.35);
+      padding: 6px 18px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #C089F8;
+      letter-spacing: 0.05em;
+      margin: 12px 0 20px;
+    }
+    .success-state p {
+      color: var(--bb-muted);
+      font-size: 15px;
+      max-width: 540px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+    .success-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* Logged-in Customer Notice */
+    .logged-in-notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(139,47,224,0.10);
+      border: 1px solid rgba(139,47,224,0.25);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #D4CEE8;
+      margin-bottom: 24px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .form-card { padding: 28px 20px; }
+      .form-grid { grid-template-columns: 1fr; gap: 16px; }
+      .grid-col-2 { grid-column: span 1; }
+      .form-hero h1 { font-size: 30px; }
+    }
+  </style>
+
+  <div class="page-wrapper wholesale-signup-page">
+    {% render 'brand-trust-bar' %}
+
+    <main>
+      <div class="form-container">
+        <div class="form-hero">
+          <span class="eyebrow-badge">• Wholesale Application</span>
+          <h1>Apply for Wholesale Access</h1>
+          <p>
+            Complete the application below to request access to purchasing our semi-custom product collections.
+            Our team will review your application and notify you by email.
+          </p>
+        </div>
+
+        <div class="form-card">
+          <div id="generalAlert" class="alert-banner error" role="alert"></div>
+
+          {% if customer %}
+            <div class="logged-in-notice">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="#C089F8">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span>Signed in as <strong>{{ customer.name }}</strong> ({{ customer.email }}). Application will be linked directly to your account.</span>
+            </div>
+          {% endif %}
+
+          <!-- Application Form -->
+          <form id="wholesaleSignupForm" novalidate>
+            <!-- Honeypot anti-spam -->
+            <input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" />
+            <input type="hidden" id="shopifyCustomerId" name="shopifyCustomerId" value="{{ customer.id | default: '' }}" />
+
+            <!-- Section 1: Your Details -->
+            <div class="form-section-title">
+              <span class="section-num">1</span>
+              Your Details
+            </div>
+            <div class="form-grid">
+              <div class="field-group">
+                <label for="firstName">First Name <span class="req">*</span></label>
+                <input type="text" id="firstName" name="firstName" class="field-input" required
+                       value="{{ customer.first_name | default: '' }}" placeholder="e.g. John" autocomplete="given-name" />
+                <span class="error-msg" id="firstNameErr">First name is required</span>
+              </div>
+
+              <div class="field-group">
+                <label for="lastName">Last Name <span class="req">*</span></label>
+                <input type="text" id="lastName" name="lastName" class="field-input" required
+                       value="{{ customer.last_name | default: '' }}" placeholder="e.g. Doe" autocomplete="family-name" />
+                <span class="error-msg" id="lastNameErr">Last name is required</span>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="email">Email Address <span class="req">*</span></label>
+                <input type="email" id="email" name="email" class="field-input" required
+                       value="{{ customer.email | default: '' }}" placeholder="john@company.com" autocomplete="email" />
+                <span class="error-msg" id="emailErr">Valid business email is required</span>
+              </div>
+            </div>
+
+            <!-- Section 2: Your Business -->
+            <div class="form-section-title">
+              <span class="section-num">2</span>
+              Your Business
+            </div>
+            <div class="form-grid">
+              <div class="field-group">
+                <label for="company">Business Name <span class="req">*</span></label>
+                <input type="text" id="company" name="company" class="field-input" required
+                       placeholder="e.g. Acme Corp" autocomplete="organization" />
+                <span class="error-msg" id="companyErr">Business name is required</span>
+              </div>
+
+              <div class="field-group">
+                <label for="phone">Business Phone <span class="req">*</span></label>
+                <input type="tel" id="phone" name="phone" class="field-input" required
+                       placeholder="+1 (555) 000-0000" autocomplete="tel" />
+                <span class="error-msg" id="phoneErr">Valid phone number is required</span>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="businessType">Business Type <span class="req">*</span></label>
+                <select id="businessType" name="businessType" class="field-select" required>
+                  <option value="" disabled selected>Select your business type…</option>
+                  <option value="Retailer / Store">Retailer / Store</option>
+                  <option value="Online Reseller">Online Reseller</option>
+                  <option value="Distributor / Wholesaler">Distributor / Wholesaler</option>
+                  <option value="Education">Education</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="error-msg" id="businessTypeErr">Please select a business type</span>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="address1">Street Address <span class="req">*</span></label>
+                <input type="text" id="address1" name="address1" class="field-input" required
+                       placeholder="123 Main Street" autocomplete="address-line1" />
+                <span class="error-msg" id="address1Err">Street address is required</span>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="address2">Address Line 2 <span class="opt">Optional</span></label>
+                <input type="text" id="address2" name="address2" class="field-input"
+                       placeholder="Suite, Unit, Floor, Building" autocomplete="address-line2" />
+              </div>
+
+              <div class="field-group">
+                <label for="city">City <span class="req">*</span></label>
+                <input type="text" id="city" name="city" class="field-input" required
+                       placeholder="City" autocomplete="address-level2" />
+                <span class="error-msg" id="cityErr">City is required</span>
+              </div>
+
+              <div class="field-group">
+                <label for="province">State / Province</label>
+                <input type="text" id="province" name="province" class="field-input"
+                       placeholder="State or Province" autocomplete="address-level1" />
+              </div>
+
+              <div class="field-group">
+                <label for="zip">ZIP / Postal Code <span class="req">*</span></label>
+                <input type="text" id="zip" name="zip" class="field-input" required
+                       placeholder="ZIP / Postal Code" autocomplete="postal-code" />
+                <span class="error-msg" id="zipErr">ZIP / Postal code is required</span>
+              </div>
+
+              <div class="field-group">
+                <label for="country">Country <span class="req">*</span></label>
+                <select id="country" name="country" class="field-select" required autocomplete="country">
+                  <option value="United States" selected>United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Germany">Germany</option>
+                  <option value="France">France</option>
+                  <option value="Netherlands">Netherlands</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="error-msg" id="countryErr">Country is required</span>
+              </div>
+
+              <div class="field-group">
+                <label for="website">Business Website <span class="opt">Optional</span></label>
+                <input type="url" id="website" name="website" class="field-input"
+                       placeholder="https://example.com" />
+              </div>
+
+              <div class="field-group">
+                <label for="taxId">Tax / Resale ID <span class="opt">Optional</span></label>
+                <input type="text" id="taxId" name="taxId" class="field-input"
+                       placeholder="EIN or Resale Certificate #" />
+              </div>
+
+              <div class="field-group">
+                <label for="asiNumber">ASI Number <span class="opt">Optional</span></label>
+                <input type="text" id="asiNumber" name="asiNumber" class="field-input"
+                       placeholder="e.g. 123456" />
+              </div>
+
+              <div class="field-group">
+                <label for="sageNumber">SAGE Number <span class="opt">Optional</span></label>
+                <input type="text" id="sageNumber" name="sageNumber" class="field-input"
+                       placeholder="e.g. 98765" />
+              </div>
+
+              <div class="field-group">
+                <label for="ppaiNumber">PPAI Number <span class="opt">Optional</span></label>
+                <input type="text" id="ppaiNumber" name="ppaiNumber" class="field-input"
+                       placeholder="e.g. 123456" />
+              </div>
+
+              <div class="field-group">
+                <label for="estimatedVolume">Est. Monthly Volume <span class="opt">Optional</span></label>
+                <select id="estimatedVolume" name="estimatedVolume" class="field-select">
+                  <option value="" selected>Select estimated volume…</option>
+                  <option value="Under $25,000">Under $25,000</option>
+                  <option value="$25,000 – $50,000">$25,000 – $50,000</option>
+                  <option value="$50,000 – $100,000">$50,000 – $100,000</option>
+                  <option value="$100,000 – $500,000">$100,000 – $500,000</option>
+                  <option value="$500,000 – $1 Million">$500,000 – $1 Million</option>
+                  <option value="$1 Million+">$1 Million+</option>
+                </select>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="howHeard">How did you hear about us? <span class="req">*</span></label>
+                <select id="howHeard" name="howHeard" class="field-select" required>
+                  <option value="" disabled selected>Select an option…</option>
+                  <option value="Google / Search Engine">Google / Search Engine</option>
+                  <option value="Social Media">Social Media</option>
+                  <option value="Trade Show / Event">Trade Show / Event</option>
+                  <option value="Referral from a Partner">Referral from a Partner</option>
+                  <option value="Industry Publication">Industry Publication</option>
+                  <option value="Sales Representative">Sales Representative</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="error-msg" id="howHeardErr">Please select how you heard about us</span>
+              </div>
+
+              <div class="field-group grid-col-2">
+                <label for="reasonForApplying">Reason for Applying <span class="opt">Optional</span></label>
+                <textarea id="reasonForApplying" name="reasonForApplying" class="field-input" rows="3" style="resize:vertical;"
+                          placeholder="Tell us a bit about your promotional or custom build needs…"></textarea>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="submit" id="submitBtn" class="btn-submit">
+                <span>Submit Wholesale Application</span>
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+
+              <p class="form-footer-note">
+                Already have an approved wholesale account?
+                <a href="/account/login">Sign in to your account →</a>
+              </p>
+            </div>
+          </form>
+
+          <!-- Success State -->
+          <div id="successState" class="success-state">
+            <div class="success-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <h2>Application Submitted!</h2>
+            <div>Application Reference:</div>
+            <div id="successRefPill" class="success-ref-pill">BB-APP-1001</div>
+            <p>
+              Thank you for applying. Your wholesale application has been received and is currently under administrative review.
+              We will verify your details and notify you via email once your account has been approved.
+            </p>
+            <div class="success-actions">
+              <a href="/pages/semi-custom-sets" class="btn-submit" style="width: auto; padding: 12px 28px;">
+                Browse Semi-Custom Sets
+              </a>
+              <a href="/" class="btn-secondary">
+                Return to Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: rgba(10,10,15,0.9); border-top: 1px solid var(--bb-border); padding: 40px 48px; text-align: center; color: var(--bb-muted); font-size: 13px;">
+      <p>© {{ 'now' | date: '%Y' }} Business Bricks B2B. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      const form = document.getElementById('wholesaleSignupForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const generalAlert = document.getElementById('generalAlert');
+      const successState = document.getElementById('successState');
+      const successRefPill = document.getElementById('successRefPill');
+
+      // Configurable endpoint: Theme setting -> global variable -> default production endpoint
+      const API_ENDPOINT = {{ section.settings.api_endpoint | json }} || window.BB_APPROVAL_API_ENDPOINT || 'https://business-bricks-customer-approval.onrender.com/api/applications';
+
+      function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function clearErrors() {
+        generalAlert.style.display = 'none';
+        generalAlert.innerText = '';
+        document.querySelectorAll('.field-input, .field-select').forEach(el => el.classList.remove('has-error'));
+        document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+      }
+
+      function showError(fieldId, errorId, message) {
+        const input = document.getElementById(fieldId);
+        const err = document.getElementById(errorId);
+        if (input) input.classList.add('has-error');
+        if (err) {
+          err.style.display = 'block';
+          if (message) err.innerText = message;
+        }
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        // 1. Honeypot check
+        const honeypot = form.querySelector('input[name="_gotcha"]');
+        if (honeypot && honeypot.value.trim() !== '') {
+          // Bot detected, silently no-op
+          return;
+        }
+
+        // 2. Client-side Validation
+        let hasError = false;
+
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const company = document.getElementById('company').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const businessType = document.getElementById('businessType').value;
+        const address1 = document.getElementById('address1').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        const country = document.getElementById('country').value;
+        const howHeard = document.getElementById('howHeard').value;
+        const shopifyCustomerId = document.getElementById('shopifyCustomerId').value;
+
+        if (!firstName) { showError('firstName', 'firstNameErr'); hasError = true; }
+        if (!lastName) { showError('lastName', 'lastNameErr'); hasError = true; }
+        if (!email || !validateEmail(email)) { showError('email', 'emailErr'); hasError = true; }
+        if (!company) { showError('company', 'companyErr'); hasError = true; }
+        if (!phone || phone.length < 7) { showError('phone', 'phoneErr'); hasError = true; }
+        if (!businessType) { showError('businessType', 'businessTypeErr'); hasError = true; }
+        if (!address1) { showError('address1', 'address1Err'); hasError = true; }
+        if (!city) { showError('city', 'cityErr'); hasError = true; }
+        if (!zip) { showError('zip', 'zipErr'); hasError = true; }
+        if (!country) { showError('country', 'countryErr'); hasError = true; }
+        if (!howHeard) { showError('howHeard', 'howHeardErr'); hasError = true; }
+
+        if (hasError) {
+          generalAlert.innerText = 'Please complete all required fields highlighted below.';
+          generalAlert.style.display = 'block';
+          window.scrollTo({ top: form.offsetTop - 100, behavior: 'smooth' });
+          return;
+        }
+
+        // 3. Payload Assembly
+        const payload = {
+          firstName,
+          lastName,
+          email,
+          company,
+          phone,
+          businessType,
+          address1,
+          address2: document.getElementById('address2').value.trim() || null,
+          city,
+          province: document.getElementById('province').value.trim() || null,
+          zip,
+          country,
+          website: document.getElementById('website').value.trim() || null,
+          taxId: document.getElementById('taxId').value.trim() || null,
+          asiNumber: document.getElementById('asiNumber')?.value.trim() || null,
+          sageNumber: document.getElementById('sageNumber')?.value.trim() || null,
+          ppaiNumber: document.getElementById('ppaiNumber')?.value.trim() || null,
+          howHeard: howHeard || null,
+          estimatedVolume: document.getElementById('estimatedVolume')?.value || null,
+          reasonForApplying: document.getElementById('reasonForApplying')?.value.trim() || null,
+          shopifyCustomerId: shopifyCustomerId || null,
+          isEmailPreVerified: Boolean(shopifyCustomerId)
+        };
+
+        // 4. Submit
+        submitBtn.disabled = true;
+        submitBtn.querySelector('span').innerText = 'Submitting Application…';
+
+        try {
+          const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Show Success State
+            form.style.display = 'none';
+            if (data.referenceNumber) {
+              successRefPill.innerText = data.referenceNumber;
+            }
+            successState.style.display = 'block';
+            window.scrollTo({ top: successState.offsetTop - 80, behavior: 'smooth' });
+          } else {
+            // Show server-side validation or duplicate application error
+            generalAlert.innerText = data.error || 'Unable to submit application. Please verify your details.';
+            generalAlert.style.display = 'block';
+            window.scrollTo({ top: form.offsetTop - 100, behavior: 'smooth' });
+          }
+        } catch (networkErr) {
+          // If the custom approval app server is still in deployment staging or offline,
+          // display a helpful fallback
+          generalAlert.innerText = 'Application server is currently connecting. Please try again or contact support@businessbricks.com';
+          generalAlert.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.querySelector('span').innerText = 'Submit Wholesale Application';
+        }
+      });
+    })();
+  </script>
+</div>
+
+{% schema %}
+{
+  "name": "Wholesale Signup",
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_endpoint",
+      "label": "Approval App API Endpoint",
+      "info": "URL for submitting wholesale applications. Leave blank to default to /api/applications or enter hosted production URL (e.g. https://approval.businessbricks.com/api/applications)."
+    }
+  ]
+}
+{% endschema %}

@@ -39,30 +39,7 @@
       }
       .page{position:relative;z-index:1}
 
-            header{
-        display:flex;align-items:center;justify-content:space-between;
-        padding:0 60px;height:68px;
-        background:rgba(8,8,13,.85);
-        border-bottom:1px solid var(--border);
-        backdrop-filter:blur(18px);
-        position:sticky;top:0;z-index:300;
-      }
-      .logo{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
-      .logo svg{width:24px;height:30px}
-      .logo-name b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.2px}
-      .logo-name b:first-child{color:#fff}
-      .logo-name b:last-child{color:var(--purple)}
-      nav{display:flex;align-items:center;gap:22px}
-      nav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .18s}
-      nav a:hover,nav a.active{color:#fff}
-      .btn-quote{
-        background:var(--purple-g);
-        color:#fff;font-size:13px;font-weight:700;
-        padding:9px 20px;border-radius:99px;text-decoration:none;
-        white-space:nowrap;box-shadow:0 4px 16px rgba(139,47,224,.38);
-        transition:opacity .2s;
-      }
-      .btn-quote:hover{opacity:.88}
+
 
             .product-detail{
         max-width:1100px;margin:0 auto;padding:64px 40px;
@@ -958,6 +935,54 @@
                 <label for="mWebsite">Website <span class="opt">(Optional)</span></label>
                 <input type="url" id="mWebsite" name="website" class="b2b-modal-input" placeholder="https://example.com" />
               </div>
+
+              <div class="b2b-input-group">
+                <label for="mAsiNumber">ASI Number <span class="opt">(Optional)</span></label>
+                <input type="text" id="mAsiNumber" name="asiNumber" class="b2b-modal-input" placeholder="e.g. 123456" />
+              </div>
+
+              <div class="b2b-input-group">
+                <label for="mSageNumber">SAGE Number <span class="opt">(Optional)</span></label>
+                <input type="text" id="mSageNumber" name="sageNumber" class="b2b-modal-input" placeholder="e.g. 98765" />
+              </div>
+
+              <div class="b2b-input-group">
+                <label for="mPpaiNumber">PPAI Number <span class="opt">(Optional)</span></label>
+                <input type="text" id="mPpaiNumber" name="ppaiNumber" class="b2b-modal-input" placeholder="e.g. 123456" />
+              </div>
+
+              <div class="b2b-input-group">
+                <label for="mEstimatedVolume">Est. Monthly Volume <span class="opt">(Optional)</span></label>
+                <select id="mEstimatedVolume" name="estimatedVolume" class="b2b-modal-select">
+                  <option value="" selected>Select estimated volume…</option>
+                  <option value="Under $25,000">Under $25,000</option>
+                  <option value="$25,000 – $50,000">$25,000 – $50,000</option>
+                  <option value="$50,000 – $100,000">$50,000 – $100,000</option>
+                  <option value="$100,000 – $500,000">$100,000 – $500,000</option>
+                  <option value="$500,000 – $1 Million">$500,000 – $1 Million</option>
+                  <option value="$1 Million+">$1 Million+</option>
+                </select>
+              </div>
+
+              <div class="b2b-input-group b2b-form-full">
+                <label for="mHowHeard">How did you hear about us? <span class="req">*</span></label>
+                <select id="mHowHeard" name="howHeard" class="b2b-modal-select" required>
+                  <option value="" disabled selected>Select an option…</option>
+                  <option value="Google / Search Engine">Google / Search Engine</option>
+                  <option value="Social Media">Social Media</option>
+                  <option value="Trade Show / Event">Trade Show / Event</option>
+                  <option value="Referral from a Partner">Referral from a Partner</option>
+                  <option value="Industry Publication">Industry Publication</option>
+                  <option value="Sales Representative">Sales Representative</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="b2b-field-err" id="mHowHeardErr">Please select how you heard about us</span>
+              </div>
+
+              <div class="b2b-input-group b2b-form-full">
+                <label for="mReasonForApplying">Reason for Applying <span class="opt">(Optional)</span></label>
+                <textarea id="mReasonForApplying" name="reasonForApplying" class="b2b-modal-input" rows="2" style="resize:vertical;" placeholder="Tell us about your custom brick needs…"></textarea>
+              </div>
             </div>
 
             <button type="submit" id="modalSubmitBtn" class="b2b-modal-submit">
@@ -1073,6 +1098,12 @@
             const country = document.getElementById('mCountry')?.value || 'United States';
             const taxId = (document.getElementById('mTaxId')?.value || '').trim();
             const website = (document.getElementById('mWebsite')?.value || '').trim();
+            const asiNumber = (document.getElementById('mAsiNumber')?.value || '').trim();
+            const sageNumber = (document.getElementById('mSageNumber')?.value || '').trim();
+            const ppaiNumber = (document.getElementById('mPpaiNumber')?.value || '').trim();
+            const estimatedVolume = document.getElementById('mEstimatedVolume')?.value || '';
+            const howHeard = document.getElementById('mHowHeard')?.value || '';
+            const reasonForApplying = (document.getElementById('mReasonForApplying')?.value || '').trim();
 
             let hasError = false;
             if (!firstName) { showFieldError('mFirstName', 'mFirstNameErr'); hasError = true; }
@@ -1085,6 +1116,7 @@
             if (!city) { showFieldError('mCity', 'mCityErr'); hasError = true; }
             if (!zip) { showFieldError('mZip', 'mZipErr'); hasError = true; }
             if (!country) { showFieldError('mCountry', 'mCountryErr'); hasError = true; }
+            if (!howHeard) { showFieldError('mHowHeard', 'mHowHeardErr'); hasError = true; }
 
             if (hasError) return;
 
@@ -1107,8 +1139,14 @@
               country,
               taxId: taxId || null,
               website: website || null,
+              asiNumber: asiNumber || null,
+              sageNumber: sageNumber || null,
+              ppaiNumber: ppaiNumber || null,
+              howHeard: howHeard || null,
+              estimatedVolume: estimatedVolume || null,
+              reasonForApplying: reasonForApplying || null,
               shopifyCustomerId: window.BB_CUSTOMER_ID || null,
-              isEmailPreVerified: false
+              isEmailPreVerified: Boolean(window.BB_CUSTOMER_ID)
             };
 
             try {

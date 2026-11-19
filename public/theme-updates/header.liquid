@@ -1,0 +1,453 @@
+<style>
+  #shopify-section-header {
+    height: 72px;
+    min-height: 72px;
+    display: block;
+    width: 100%;
+    position: relative;
+    z-index: 299;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 72px;
+    background: rgba(8, 8, 13, 0.9);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 300 !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform;
+  }
+
+  header.header--hidden {
+    transform: translateY(-100%) !important;
+  }
+
+  header.header--scrolled {
+    background: rgba(8, 8, 13, 0.95);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    header {
+      transition: none;
+    }
+  }
+
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .header-logo-img {
+    height: {{ settings.logo_height | default: 36 }}px !important;
+    width: auto !important;
+    max-height: 52px;
+    object-fit: contain;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+  @media (max-width: 768px) {
+    .header-logo-img {
+      height: {{ settings.logo_height_mobile | default: 28 }}px !important;
+      max-height: 40px;
+    }
+  }
+  .logo-icon {
+    width: 28px;
+    height: 34px;
+    flex-shrink: 0;
+    display: block;
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .logo-text span:first-child,
+  .logo-text b:first-child {
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: -0.3px;
+  }
+  .logo-text span:last-child,
+  .logo-text b:last-child {
+    font-size: 15px;
+    font-weight: 800;
+    color: #8B2FE0;
+    letter-spacing: -0.3px;
+  }
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .main-nav ul {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    position: relative;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color 0.2s;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #9B3FEF, #7B28CC);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    width: 100%;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: #FFFFFF;
+  }
+
+  .header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .header-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 8px 16px;
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.2s;
+  }
+  .header-login:hover {
+    background: rgba(139, 47, 224, 0.15);
+    border-color: rgba(139, 47, 224, 0.4);
+    color: #FFFFFF;
+  }
+
+  .header-quote-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #9B3FEF 0%, #7B28CC 100%);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(139, 47, 224, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .header-quote-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(139, 47, 224, 0.55);
+    filter: brightness(1.08);
+    color: #FFFFFF;
+  }
+
+    .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+
+    .hamburger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .hamburger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+    @media (max-width: 768px) {
+    header {
+      padding: 0 20px;
+    }
+
+        .main-nav {
+      position: absolute;
+      top: 72px;
+      left: 0;
+      width: 100%;
+      background: rgba(8, 8, 13, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      align-items: center;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .main-nav.open {
+      max-height: 500px;
+    }
+
+    .main-nav ul {
+      flex-direction: column;
+      width: 100%;
+      gap: 0;
+      padding: 20px 0;
+    }
+
+    .main-nav li {
+      text-align: center;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 14px 20px;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .nav-link::after {
+      display: none;
+    }
+
+    .hamburger {
+      display: flex;
+      order: 1;
+    }
+
+        .header-actions,
+    .header-login {
+      display: none;
+    }
+  }
+
+    @media (max-width: 480px) {
+    .logo-text span,
+    .logo-text b {
+      font-size: 13px;
+    }
+    .logo-icon {
+      width: 24px;
+      height: 29px;
+    }
+  }
+  .mobile-login,
+  .mobile-quote {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-login,
+    .mobile-quote {
+      display: block;
+    }
+  }
+</style>
+
+<header>
+  <a href="/" class="logo-wrap" aria-label="{{ shop.name | default: 'Business Bricks' | escape }}">
+    {%- if settings.logo != blank -%}
+      {{
+        settings.logo
+        | image_url: width: 600
+        | image_tag:
+          class: 'header-logo-img',
+          widths: '160, 240, 320, 480, 600',
+          height: settings.logo_height,
+          alt: shop.name,
+          preload: true
+      }}
+    {%- elsif settings.logo_image != blank -%}
+      {{
+        settings.logo_image
+        | image_url: width: 600
+        | image_tag:
+          class: 'header-logo-img',
+          widths: '160, 240, 320, 480, 600',
+          height: settings.logo_height,
+          alt: shop.name,
+          preload: true
+      }}
+    {%- else -%}
+      <img
+        src="https://promo.businessbricks.com/cdn/shop/files/business_bricks_logo.png?v=1793706255&width=600"
+        alt="{{ shop.name | default: 'Business Bricks' | escape }}"
+        class="header-logo-img"
+        width="180"
+        height="36"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {%- endif -%}
+  </a>
+
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <nav class="main-nav" id="mainNav">
+    <ul>
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li><a href="/pages/semi-custom-sets" class="nav-link">Semi-Custom Sets</a></li>
+      <li><a href="/pages/catalog" class="nav-link">Design Portfolio</a></li>
+      <li class="mobile-quote"><a href="/pages/request-a-quote" class="nav-link">Request a Quote</a></li>
+      <li><a href="/pages/about" class="nav-link">About Us</a></li>
+      <li><a href="/pages/contact" class="nav-link">Contact</a></li>
+      <li><a href="/pages/blog" class="nav-link">Blog</a></li>
+      <li class="mobile-login">
+        {% if customer %}
+          <a href="/account" class="nav-link">
+            My Account
+          </a>
+        {% else %}
+          <a href="/account/login" class="nav-link">
+            Partner Login
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+
+  <div class="header-actions">
+    {% if customer %}
+      <a class="header-login" href="/account">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M2 12c0-2.21 2.239-4 5-4s5 1.79 5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        My Account
+      </a>
+    {% else %}
+      <a class="header-login" href="/account/login">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M2 12c0-2.21 2.239-4 5-4s5 1.79 5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Partner Login
+      </a>
+    {% endif %}
+    <a class="header-quote-btn" href="/pages/request-a-quote">Request a Quote</a>
+  </div>
+</header>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const mainNav = document.getElementById('mainNav');
+
+  hamburger.addEventListener('click', () => {
+    mainNav.classList.toggle('open');
+    hamburger.classList.toggle('open');
+  });
+  const navLinks = mainNav.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        mainNav.classList.remove('open');
+        hamburger.classList.remove('open');
+      }
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!hamburger.contains(e.target) && !mainNav.contains(e.target)) {
+      mainNav.classList.remove('open');
+      hamburger.classList.remove('open');
+    }
+  });
+  (function initHeaderScroll() {
+    const headerEl = document.querySelector('header');
+    if (!headerEl) return;
+
+    let lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    let isTicking = false;
+    const SCROLL_THRESHOLD = 10; // Scroll hysteresis to prevent jitter
+    const TOP_THRESHOLD = 72;
+
+    function handleScroll() {
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      const isMobileOpen = mainNav && mainNav.classList.contains('open');
+      if (isMobileOpen) {
+        headerEl.classList.remove('header--hidden');
+        lastScrollY = currentScrollY;
+        isTicking = false;
+        return;
+      }
+      if (currentScrollY <= TOP_THRESHOLD) {
+        headerEl.classList.remove('header--hidden', 'header--scrolled');
+        lastScrollY = currentScrollY;
+        isTicking = false;
+        return;
+      }
+      headerEl.classList.add('header--scrolled');
+      const delta = currentScrollY - lastScrollY;
+      if (Math.abs(delta) >= SCROLL_THRESHOLD) {
+        if (delta > 0 && currentScrollY > TOP_THRESHOLD + 40) {
+          headerEl.classList.add('header--hidden');
+        } else if (delta < 0) {
+          headerEl.classList.remove('header--hidden');
+        }
+        lastScrollY = currentScrollY;
+      }
+
+      isTicking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!isTicking) {
+        window.requestAnimationFrame(handleScroll);
+        isTicking = true;
+      }
+    }, { passive: true });
+  })();
+</script>
